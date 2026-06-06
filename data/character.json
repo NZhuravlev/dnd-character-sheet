@@ -6,7 +6,7 @@
   },
   "identity": {
     "id": "student-prizmari",
-    "name": "Студент Призмари",
+    "name": "Скив",
     "className": "Mystic",
     "subclassName": "Орден Ву Дзень",
     "level": 13,
@@ -15,36 +15,12 @@
     "species": null
   },
   "abilities": {
-    "str": {
-      "label": "Сила",
-      "base": 13,
-      "max": 20
-    },
-    "dex": {
-      "label": "Ловкость",
-      "base": 14,
-      "max": 20
-    },
-    "con": {
-      "label": "Телосложение",
-      "base": 12,
-      "max": 20
-    },
-    "int": {
-      "label": "Интеллект",
-      "base": 21,
-      "max": 22
-    },
-    "wis": {
-      "label": "Мудрость",
-      "base": 14,
-      "max": 20
-    },
-    "cha": {
-      "label": "Харизма",
-      "base": 12,
-      "max": 20
-    }
+    "str": 13,
+    "dex": 14,
+    "con": 12,
+    "int": 21,
+    "wis": 14,
+    "cha": 12
   },
   "durability": {
     "hitDie": 8,

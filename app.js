@@ -1,11 +1,15 @@
 const CHARACTER_URL = "./data/character.json";
 const STORAGE_KEY = "student-prizmari-combat-state-v1";
-const characterModuleData =
-  typeof window !== "undefined" && window.__CHARACTER_DATA__
-    ? window.__CHARACTER_DATA__
-    : null;
 
 const ABILITY_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
+const ABILITY_LABELS = {
+  str: "Сила",
+  dex: "Ловкость",
+  con: "Телосложение",
+  int: "Интеллект",
+  wis: "Мудрость",
+  cha: "Харизма"
+};
 
 const SKILL_DEFINITIONS = {
   acr: { label: "Акробатика", ability: "dex" },
@@ -70,6 +74,7 @@ const MYSTIC_PROGRESS = {
 
 let characterData;
 let runtimeState;
+let activeModalContext = null;
 
 async function main() {
   characterData = await loadCharacter();
@@ -79,29 +84,9 @@ async function main() {
 }
 
 async function loadCharacter() {
-  if (window.location.protocol === "file:") {
-    if (characterModuleData) {
-      return structuredClone(characterModuleData);
-    }
-
-    throw new Error("Не удалось получить данные персонажа из локального fallback-файла.");
-  }
-
-  try {
-    const response = await fetch(CHARACTER_URL);
-    if (response.ok) {
-      return response.json();
-    }
-  } catch (error) {
-    if (characterModuleData) {
-      return structuredClone(characterModuleData);
-    }
-
-    throw error;
-  }
-
-  if (characterModuleData) {
-    return structuredClone(characterModuleData);
+  const response = await fetch(CHARACTER_URL);
+  if (response.ok) {
+    return response.json();
   }
 
   throw new Error(`Не удалось загрузить ${CHARACTER_URL}`);
@@ -129,15 +114,13 @@ function saveState() {
 function render() {
   const derived = deriveCharacter(characterData, runtimeState);
   renderHero(derived);
-  renderResources(derived);
   renderAbilities(derived);
   renderCombat(derived);
-  renderSaves(derived);
-  renderSkills(derived);
   renderDisciplines(derived);
   renderTalents(derived);
   renderSpells(derived);
   renderFeatures(derived);
+  renderFeats(derived);
   renderItems(derived);
   renderEquipment(derived);
   renderCurrency(derived);
@@ -195,12 +178,12 @@ function deriveAbilities(data) {
 
   for (const key of ABILITY_ORDER) {
     const source = data.abilities[key];
+    const base = typeof source === "number" ? source : source.base;
     abilities[key] = {
       key,
-      label: source.label,
-      base: source.base,
-      max: source.max,
-      score: source.base
+      label: ABILITY_LABELS[key],
+      base,
+      score: base
     };
   }
 
@@ -210,9 +193,6 @@ function deriveAbilities(data) {
     if (item.equipped === false && !item.consumed) continue;
 
     for (const [abilityKey, payload] of Object.entries(item.bonuses)) {
-      if (payload.max) {
-        abilities[abilityKey].max = evaluateFormula(payload.max, abilities[abilityKey].max, { abilities });
-      }
       if (payload.score) {
         abilities[abilityKey].score = evaluateFormula(payload.score, abilities[abilityKey].score, { abilities });
       }
@@ -220,7 +200,6 @@ function deriveAbilities(data) {
   }
 
   for (const key of ABILITY_ORDER) {
-    abilities[key].score = Math.min(abilities[key].score, abilities[key].max);
     abilities[key].mod = Math.floor((abilities[key].score - 10) / 2);
   }
 
@@ -356,10 +335,10 @@ function buildActionLibrary(data) {
   const actions = [];
 
   for (const feature of data.classFeatures) {
-    if (feature.kind === "passive" || feature.kind === "special") continue;
+    if (feature.kind === "passive") continue;
     actions.push({
       name: feature.name,
-      type: feature.kind,
+      type: normalizeActionType(feature.kind),
       source: "Умение класса",
       summary: feature.summary
     });
@@ -427,7 +406,7 @@ function normalizeActionType(rawType) {
     action: "action",
     bonus: "bonus",
     reaction: "reaction",
-    special: null
+    special: "special"
   };
   return map[rawType] ?? map[String(rawType).toLowerCase()] ?? "action";
 }
@@ -442,61 +421,125 @@ function renderHero(derived) {
     `${derived.data.identity.className} ${derived.data.identity.level} · ${derived.data.identity.subclassName}`;
 
   const tags = [
-    `XP ${derived.data.identity.xp.toLocaleString("ru-RU")}`,
-    `PB ${formatModifier(derived.proficiencyBonus)}`,
-    `КС ${derived.spell.saveDC}`,
-    `Пси-атака ${formatModifier(derived.spell.attackBonus)}`,
-    `Пассивное восприятие ${derived.passivePerception}`,
-    `Телепатия 120 фт.`
+    { label: "XP", value: derived.data.identity.xp.toLocaleString("ru-RU"), accent: "strong" },
+    { label: "PB", value: formatModifier(derived.proficiencyBonus), accent: "strong" },
+    { label: "КС", value: `${derived.spell.saveDC}`, icon: "sigil" },
+    { label: "Пси-атака", value: formatModifier(derived.spell.attackBonus), icon: "spark" },
+    { label: "КД", value: `${derived.armorClass}`, icon: "shield" },
+    { label: "Инициатива", value: formatModifier(derived.initiative), icon: "arrow" },
+    { label: "Скорость", value: `${derived.speed.walk} фт.`, icon: "stride" },
+    { label: "Пси-лимит", value: `${derived.progression.psiLimit}`, icon: "psi" },
+    { label: "Пассивное восприятие", value: `${derived.passivePerception}`, icon: "eye" },
+    { label: "Телепатия", value: "120 фт.", icon: "wave" }
   ];
 
   document.querySelector("#hero-tags").innerHTML = tags
-    .map((tag, index) => `<span class="tag ${index < 2 ? "strong" : ""}">${tag}</span>`)
+    .map((tag) => `
+      <span class="tag ${tag.accent ?? ""} ${tag.icon ? "with-icon" : ""}">
+        ${tag.icon ? `<span class="tag-icon" aria-hidden="true">${chipIcon(tag.icon)}</span>` : ""}
+        <span>${tag.label} ${tag.value}</span>
+      </span>
+    `)
     .join("");
 }
 
-function renderResources(derived) {
-  const state = derived.state;
-  const effectiveMaxHp = derived.hpMax + state.maxHpAdjustment;
-  const resources = [
-    { label: "Хиты", value: `${Math.max(0, state.hpCurrent)}/${effectiveMaxHp}` },
-    { label: "КД", value: `${derived.armorClass}` },
-    { label: "Инициатива", value: `${formatModifier(derived.initiative)}` },
-    { label: "Скорость", value: `${derived.speed.walk} фт.` },
-    { label: "Пси-очки", value: `${state.psiPointsCurrent}/${derived.progression.psiPoints}` },
-    { label: "Пси-лимит", value: `${derived.progression.psiLimit}` },
-    { label: "Lucky", value: `${state.luckyPointsCurrent}/3` },
-    { label: "Psionic Mastery", value: `${state.psionicMasteryUsesCurrent}/${derived.progression.psionicMasteryUses}` }
-  ];
+function chipIcon(type) {
+  const icons = {
+    shield: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 2.25 12.5 4v3.2c0 3.1-1.7 5.25-4.5 6.55C5.2 12.45 3.5 10.3 3.5 7.2V4L8 2.25Z"/>
+      </svg>
+    `,
+    arrow: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 13V3M4.75 6.25 8 3l3.25 3.25"/>
+      </svg>
+    `,
+    stride: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5.25 3.25h2.5M6 3.25 8.5 7l2-.5M7.5 8.25 6 13m3-4.75L12 13"/>
+      </svg>
+    `,
+    psi: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 2.5v11M4.75 4.5c0-1 1.3-2 3.25-2s3.25 1 3.25 2-1.3 2-3.25 2-3.25 1-3.25 2 1.3 2 3.25 2 3.25 1 3.25 2"/>
+      </svg>
+    `,
+    eye: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1.75 8s2.25-3.75 6.25-3.75S14.25 8 14.25 8s-2.25 3.75-6.25 3.75S1.75 8 1.75 8Z"/>
+        <circle cx="8" cy="8" r="1.75"/>
+      </svg>
+    `,
+    wave: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 6.25c1 .9 2 .9 3 0s2-.9 3 0 2 .9 3 0 2-.9 2.5 0M2.5 9.75c1 .9 2 .9 3 0s2-.9 3 0 2 .9 3 0 2-.9 2.5 0"/>
+      </svg>
+    `,
+    spark: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m8 1.75 1.35 4.9 4.9 1.35-4.9 1.35L8 14.25 6.65 9.35 1.75 8l4.9-1.35L8 1.75Z"/>
+      </svg>
+    `,
+    sigil: `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="8" r="4.75"/>
+        <path d="M8 5.25v5.5M5.25 8h5.5"/>
+      </svg>
+    `
+  };
 
-  document.querySelector("#resource-strip").innerHTML = resources
-    .map(
-      (resource) => `
-        <article class="resource-card">
-          <strong>${resource.label}</strong>
-          <span>${resource.value}</span>
-        </article>
-      `
-    )
-    .join("");
+  return icons[type] ?? "";
 }
 
 function renderAbilities(derived) {
+  const skillProficiencies = new Set(derived.data.proficiencies.skills);
+  const skillExpertise = new Set(derived.data.proficiencies.expertise);
+  const saveProficiencies = new Set(derived.data.proficiencies.savingThrows);
+
   document.querySelector("#abilities-grid").innerHTML = ABILITY_ORDER.map((key) => {
     const ability = derived.abilities[key];
-    const changed = ability.score !== ability.base || ability.max !== derived.data.abilities[key].max;
-    const meta = changed
-      ? `base ${ability.base}, cap ${ability.max}`
-      : `base ${ability.base}`;
+    const meta = ability.score !== ability.base ? `base ${ability.base}` : "";
+    const relatedSkills = Object.entries(SKILL_DEFINITIONS)
+      .filter(([, definition]) => definition.ability === key)
+      .map(([skillKey, definition]) => {
+        const markerClass = skillExpertise.has(skillKey)
+          ? "is-expertise"
+          : skillProficiencies.has(skillKey)
+            ? "is-proficient"
+            : "";
+
+        return `
+          <div class="ledger-line">
+            <span class="ledger-marker circle ${markerClass}"></span>
+            <span class="ledger-label">${definition.label}</span>
+            <span class="ledger-value">${formatModifier(derived.skills[skillKey])}</span>
+          </div>
+        `;
+      })
+      .join("");
+    const hasSkills = Boolean(relatedSkills);
 
     return `
-      <article class="ability-card">
-        <div class="ability-top">
-          <strong>${ability.label}</strong>
-          <span class="ability-mod">${formatModifier(ability.mod)}</span>
+      <article class="ability-row-sheet ${hasSkills ? "" : "no-ledger"}">
+        <div class="ability-box">
+          <div class="ability-frame">
+            <strong class="ability-name">${ability.label}</strong>
+            <div class="ability-main">
+              <span class="ability-score">${ability.score}</span>
+              <div class="ability-side">
+                <span class="ability-mod">${formatModifier(ability.mod)}</span>
+                <span class="ability-save ${saveProficiencies.has(key) ? "is-proficient" : ""}">СБ ${formatModifier(derived.saves[key])}</span>
+              </div>
+            </div>
+            ${meta ? `<span class="ability-meta">${meta}</span>` : ""}
+          </div>
         </div>
-        <span class="ability-score">${ability.score}</span>
-        <span class="ability-meta">${meta}</span>
+        ${hasSkills ? `
+          <div class="ability-ledger">
+            <div class="ledger-skills">${relatedSkills}</div>
+          </div>
+        ` : ""}
       </article>
     `;
   }).join("");
@@ -591,23 +634,27 @@ function renderSpells(derived) {
 }
 
 function renderFeatures(derived) {
-  const feats = derived.data.feats.map((feat) => ({
-    name: feat.name,
-    summary: feat.summary,
-    source: "Фит"
-  }));
-
   const features = derived.data.classFeatures.map((feature) => ({
     name: feature.name,
     summary: feature.summary,
     source: "Класс"
   }));
 
-  document.querySelector("#features-list").innerHTML = [...features, ...feats].map((entry) => `
+  document.querySelector("#features-list").innerHTML = features.map((entry) => `
     <article class="stack-card">
       <strong>${entry.name}</strong>
       <p>${entry.summary}</p>
       <div class="detail-row"><span>${entry.source}</span></div>
+    </article>
+  `).join("");
+}
+
+function renderFeats(derived) {
+  document.querySelector("#feats-list").innerHTML = derived.data.feats.map((feat) => `
+    <article class="stack-card">
+      <strong>${feat.name}</strong>
+      <p>${feat.summary}</p>
+      <div class="detail-row"><span>Фит</span></div>
     </article>
   `).join("");
 }
@@ -697,6 +744,14 @@ function renderConditions(derived) {
 function renderState(derived) {
   const effectiveMaxHp = derived.hpMax + derived.state.maxHpAdjustment;
   document.querySelector("#hp-summary").textContent = `${Math.max(0, derived.state.hpCurrent)} / ${effectiveMaxHp} HP`;
+  const tempHpSummary = document.querySelector("#temp-hp-summary");
+  if (derived.state.tempHp > 0) {
+    tempHpSummary.classList.remove("hidden");
+    tempHpSummary.textContent = `+${derived.state.tempHp} temp HP`;
+  } else {
+    tempHpSummary.classList.add("hidden");
+    tempHpSummary.textContent = "";
+  }
   document.querySelector("#psi-input").value = derived.state.psiPointsCurrent;
   document.querySelector("#hit-dice-input").value = derived.state.hitDiceCurrent;
   document.querySelector("#lucky-input").value = derived.state.luckyPointsCurrent;
@@ -737,6 +792,8 @@ function wireUi() {
     }
   });
   document.querySelector("#close-modal-button").addEventListener("click", closeActionsModal);
+  document.querySelector("#modal-search-button").addEventListener("click", renderModalSearchResults);
+  document.querySelector("#modal-search-input").addEventListener("input", renderModalSearchResults);
 
   document.querySelector("#damage-button").addEventListener("click", () => applyHitChange(-readNumber("#hp-adjustment")));
   document.querySelector("#heal-button").addEventListener("click", () => applyHitChange(readNumber("#hp-adjustment")));
@@ -846,32 +903,73 @@ function openActionsModal(type) {
   const modal = document.querySelector("#actions-modal");
   const actions = derived.actionLibrary.filter((action) => action.type === type);
 
+  activeModalContext = { type, actions };
   document.querySelector("#modal-type-label").textContent = humanActionType(type);
   document.querySelector("#modal-title").textContent = titleByActionType(type);
-  document.querySelector("#modal-actions-list").innerHTML = actions.map((action) => `
-    <article class="modal-card">
-      <strong>${action.name}</strong>
-      <p>${action.summary}</p>
-      <div class="detail-row"><span>${action.source}</span><span>${action.cost ?? "без стоимости"}</span></div>
-      <div class="detail-row"><span>${action.range ?? "—"}</span><span>${action.duration ?? "—"}</span></div>
-    </article>
-  `).join("");
-
+  document.querySelector("#modal-search-input").value = "";
+  renderModalSearchResults();
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden", "false");
+  document.querySelector("#modal-search-input").focus();
 }
 
 function closeActionsModal() {
   const modal = document.querySelector("#actions-modal");
+  activeModalContext = null;
   modal.classList.add("hidden");
   modal.setAttribute("aria-hidden", "true");
+}
+
+function renderModalSearchResults() {
+  if (!activeModalContext) return;
+
+  const query = document.querySelector("#modal-search-input").value.trim();
+  const normalizedQuery = normalizeSearchText(query);
+  const filteredActions = normalizedQuery
+    ? activeModalContext.actions.filter((action) => buildActionSearchText(action).includes(normalizedQuery))
+    : activeModalContext.actions;
+
+  document.querySelector("#modal-actions-list").innerHTML = filteredActions.length
+    ? filteredActions.map((action) => `
+        <article class="modal-card">
+          <strong>${action.name}</strong>
+          <p>${action.summary}</p>
+          <div class="detail-row"><span>${action.source}</span><span>${action.cost ?? "без стоимости"}</span></div>
+          <div class="detail-row"><span>${action.range ?? "—"}</span><span>${action.duration ?? "—"}</span></div>
+        </article>
+      `).join("")
+    : `
+        <article class="modal-card">
+          <strong>${query ? "Ничего не найдено" : "Нет способностей"}</strong>
+          <p>${query ? `По запросу «${query}» нет совпадений в этой категории.` : "Сейчас для этой категории нечего показать."}</p>
+        </article>
+      `;
+}
+
+function buildActionSearchText(action) {
+  return normalizeSearchText([
+    action.name,
+    action.summary,
+    action.source,
+    action.cost,
+    action.range,
+    action.duration
+  ].filter(Boolean).join(" "));
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .trim();
 }
 
 function humanActionType(type) {
   const labels = {
     action: "Действие",
     bonus: "Бонусное действие",
-    reaction: "Реакция"
+    reaction: "Реакция",
+    special: "Особое"
   };
   return labels[type] ?? type;
 }
@@ -880,7 +978,8 @@ function titleByActionType(type) {
   const labels = {
     action: "Доступные действия",
     bonus: "Доступные бонусные действия",
-    reaction: "Доступные реакции"
+    reaction: "Доступные реакции",
+    special: "Особые способности"
   };
   return labels[type] ?? "Действия";
 }
@@ -916,7 +1015,7 @@ main().catch((error) => {
         <p class="eyebrow">Ошибка загрузки</p>
         <h1>Страница не запустилась</h1>
         <p class="hero-subtitle">${error.message}</p>
-        <p class="hero-subtitle">Если ты открыл файл напрямую через file://, подними простой локальный сервер, например: <code>python3 -m http.server 8000</code></p>
+        <p class="hero-subtitle">Для локального запуска используй <code>run-local.command</code> или подними сервер командой <code>python3 -m http.server 8000</code>.</p>
       </section>
     </main>
   `;

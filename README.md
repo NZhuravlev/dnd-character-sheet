@@ -6,23 +6,21 @@
 
 - `index.html`, `styles.css`, `app.js` — клиент
 - `data/character.json` — основной источник данных персонажа
-- `data/character-data.js` — сгенерированный глобальный fallback-файл для открытия сайта напрямую через `file://`
-- `scripts/generate-character-module.js` — генератор `character-data.js` из `character.json`
-
-## Обновление данных
-
-После изменений в `data/character.json` обнови fallback-модуль:
-
-```bash
-node scripts/generate-character-module.js
-```
+- `run-local.command` — локальный запуск через простой HTTP-сервер
 
 ## Локальный просмотр
 
-Можно открыть `index.html` напрямую с диска.
+Открой `run-local.command`.
+Скрипт сам поднимет локальный HTTP-сервер и выберет свободный порт автоматически.
 
-Для обычного локального хостинга:
+Если хочешь запустить вручную:
 
 ```bash
 python3 -m http.server 8000
+```
+
+При необходимости можно явно задать порт:
+
+```bash
+PORT=8010 ./run-local.command
 ```

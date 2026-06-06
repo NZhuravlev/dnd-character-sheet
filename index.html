@@ -19,21 +19,17 @@
           <button class="action-trigger" type="button" data-action-type="action" onclick="window.__openActions?.('action')">Действие</button>
           <button class="action-trigger" type="button" data-action-type="bonus" onclick="window.__openActions?.('bonus')">Бонусное действие</button>
           <button class="action-trigger" type="button" data-action-type="reaction" onclick="window.__openActions?.('reaction')">Реакция</button>
+          <button class="action-trigger" type="button" data-action-type="special" onclick="window.__openActions?.('special')">Особое</button>
         </div>
       </header>
 
       <main class="layout">
         <section class="primary-column">
-          <section class="panel key-stats">
-            <div id="resource-strip" class="resource-strip"></div>
-          </section>
-
           <section class="panel">
             <div class="section-heading">
               <h2>Характеристики</h2>
-              <p>Производные параметры считаются на клиенте из JSON.</p>
             </div>
-            <div id="abilities-grid" class="abilities-grid"></div>
+            <div id="abilities-grid" class="abilities-sheet"></div>
           </section>
 
           <section class="panel">
@@ -45,30 +41,29 @@
             <div id="weapons-grid" class="weapons-grid"></div>
           </section>
 
-          <details class="panel collapsible" open>
-            <summary>Навыки и спасброски</summary>
-            <div class="skills-saves-grid">
-              <div>
-                <h3>Спасброски</h3>
-                <div id="saving-throws-list" class="metric-list"></div>
-              </div>
-              <div>
-                <h3>Навыки</h3>
-                <div id="skills-list" class="metric-list"></div>
-              </div>
-            </div>
-          </details>
-
           <details class="panel collapsible">
-            <summary>Дисциплины и таланты</summary>
+            <summary>Дисциплины</summary>
             <div id="disciplines-list" class="stack-list"></div>
-            <div id="talents-list" class="stack-list spaced"></div>
           </details>
 
           <details class="panel collapsible">
-            <summary>Заклинания и особенности</summary>
+            <summary>Таланты</summary>
+            <div id="talents-list" class="stack-list"></div>
+          </details>
+
+          <details class="panel collapsible">
+            <summary>Заклинания</summary>
             <div id="spells-list" class="stack-list"></div>
-            <div id="features-list" class="stack-list spaced"></div>
+          </details>
+
+          <details class="panel collapsible">
+            <summary>Особенности</summary>
+            <div id="features-list" class="stack-list"></div>
+          </details>
+
+          <details class="panel collapsible">
+            <summary>Черты</summary>
+            <div id="feats-list" class="stack-list"></div>
           </details>
 
           <details class="panel collapsible">
@@ -90,6 +85,7 @@
               <label class="field-label" for="hp-adjustment">Хиты</label>
               <div class="hp-line">
                 <span id="hp-summary" class="pill large"></span>
+                <span id="temp-hp-summary" class="pill subtle hidden"></span>
                 <span id="concentration-dc" class="pill subtle hidden"></span>
               </div>
               <div class="inline-controls">
@@ -102,8 +98,8 @@
                 <button id="temp-hp-button" class="small-button">Задать temp HP</button>
               </div>
               <div class="inline-controls">
-                <input id="max-hp-adjustment" type="number" inputmode="numeric" placeholder="Изм. max HP" />
-                <button id="max-hp-button" class="small-button">Применить</button>
+                <input id="max-hp-adjustment" type="number" inputmode="numeric" placeholder="+/- к max HP" />
+                <button id="max-hp-button" class="small-button">Изменить max HP</button>
               </div>
             </div>
 
@@ -171,11 +167,14 @@
           </div>
           <button id="close-modal-button" class="icon-button" type="button" aria-label="Закрыть">✕</button>
         </div>
+        <div class="modal-search-row">
+          <input id="modal-search-input" type="search" placeholder="Поиск: концентрация, спасбросок, урон..." />
+          <button id="modal-search-button" class="small-button" type="button">Найти</button>
+        </div>
         <div id="modal-actions-list" class="modal-actions-list"></div>
       </section>
     </div>
 
-    <script src="./data/character-data.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
