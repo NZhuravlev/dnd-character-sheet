@@ -1,7 +1,9 @@
-import characterModuleData from "./data/character-data.js";
-
 const CHARACTER_URL = "./data/character.json";
 const STORAGE_KEY = "student-prizmari-combat-state-v1";
+const characterModuleData =
+  typeof window !== "undefined" && window.__CHARACTER_DATA__
+    ? window.__CHARACTER_DATA__
+    : null;
 
 const ABILITY_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
 
@@ -78,15 +80,31 @@ async function main() {
 
 async function loadCharacter() {
   if (window.location.protocol === "file:") {
+    if (characterModuleData) {
+      return structuredClone(characterModuleData);
+    }
+
+    throw new Error("Не удалось получить данные персонажа из локального fallback-файла.");
+  }
+
+  try {
+    const response = await fetch(CHARACTER_URL);
+    if (response.ok) {
+      return response.json();
+    }
+  } catch (error) {
+    if (characterModuleData) {
+      return structuredClone(characterModuleData);
+    }
+
+    throw error;
+  }
+
+  if (characterModuleData) {
     return structuredClone(characterModuleData);
   }
 
-  const response = await fetch(CHARACTER_URL);
-  if (response.ok) {
-    return response.json();
-  }
-
-  return structuredClone(characterModuleData);
+  throw new Error(`Не удалось загрузить ${CHARACTER_URL}`);
 }
 
 function loadState(data) {

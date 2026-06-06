@@ -1,5 +1,6 @@
 // Generated from character.json for file:// compatibility.
-export default {
+(() => {
+  const data = {
   "version": 1,
   "rules": {
     "edition": "5e-2014",
@@ -764,3 +765,6 @@ export default {
     }
   ]
 };
+  window.__CHARACTER_DATA__ = data;
+  globalThis.__CHARACTER_DATA__ = data;
+})();

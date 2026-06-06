@@ -6,7 +6,7 @@
 
 - `index.html`, `styles.css`, `app.js` — клиент
 - `data/character.json` — основной источник данных персонажа
-- `data/character-data.js` — сгенерированный модуль для открытия сайта напрямую через `file://`
+- `data/character-data.js` — сгенерированный глобальный fallback-файл для открытия сайта напрямую через `file://`
 - `scripts/generate-character-module.js` — генератор `character-data.js` из `character.json`
 
 ## Обновление данных
@@ -26,4 +26,3 @@ node scripts/generate-character-module.js
 ```bash
 python3 -m http.server 8000
 ```
-
