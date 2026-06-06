@@ -1,0 +1,765 @@
+{
+  "version": 1,
+  "rules": {
+    "edition": "5e-2014",
+    "classTable": "ua-mystic-2017"
+  },
+  "identity": {
+    "id": "student-prizmari",
+    "name": "Студент Призмари",
+    "className": "Mystic",
+    "subclassName": "Орден Ву Дзень",
+    "level": 13,
+    "xp": 120000,
+    "background": "свое проис.",
+    "species": null
+  },
+  "abilities": {
+    "str": {
+      "label": "Сила",
+      "base": 13,
+      "max": 20
+    },
+    "dex": {
+      "label": "Ловкость",
+      "base": 14,
+      "max": 20
+    },
+    "con": {
+      "label": "Телосложение",
+      "base": 12,
+      "max": 20
+    },
+    "int": {
+      "label": "Интеллект",
+      "base": 21,
+      "max": 22
+    },
+    "wis": {
+      "label": "Мудрость",
+      "base": 14,
+      "max": 20
+    },
+    "cha": {
+      "label": "Харизма",
+      "base": 12,
+      "max": 20
+    }
+  },
+  "durability": {
+    "hitDie": 8,
+    "hpMode": "fixed"
+  },
+  "movement": {
+    "walk": 30
+  },
+  "combat": {
+    "armor": {
+      "name": "Проклепанный кожаный доспех",
+      "category": "light",
+      "baseArmorClass": 12,
+      "equipped": true
+    },
+    "psionicAbility": "int",
+    "weapons": [
+      {
+        "id": "spear",
+        "name": "Копье",
+        "attackAbility": "str",
+        "damageAbility": "str",
+        "proficient": true,
+        "damageDie": "1d6",
+        "damageType": "колющий",
+        "properties": [
+          "метательное",
+          "универсальное"
+        ]
+      },
+      {
+        "id": "hand-crossbow",
+        "name": "Ручной арбалет",
+        "attackAbility": "dex",
+        "damageAbility": "dex",
+        "proficient": true,
+        "damageDie": "1d6",
+        "damageType": "колющий",
+        "properties": []
+      }
+    ]
+  },
+  "proficiencies": {
+    "savingThrows": [
+      "int",
+      "wis"
+    ],
+    "skills": [
+      "acr",
+      "arc",
+      "ins",
+      "med",
+      "per",
+      "prf"
+    ],
+    "expertise": [],
+    "armor": [
+      "light"
+    ],
+    "weapons": [
+      "simple"
+    ],
+    "tools": [],
+    "languages": [
+      "общий",
+      "бездны"
+    ]
+  },
+  "currency": {
+    "pp": 23691,
+    "gp": 13985
+  },
+  "equipment": [
+    "Набор ученого",
+    "Бутыль черных чернил",
+    "Писчее перо",
+    "Набор ремесленных инструментов или музыкальный инструмент",
+    "Школьная униформа",
+    "Поясной кошель",
+    "Копье",
+    "Ручной арбалет"
+  ],
+  "feats": [
+    {
+      "id": "war-caster",
+      "name": "Боевой заклинатель",
+      "summary": "Преимущество на спасброски Телосложения для концентрации; можно использовать заклинание вместо обычной атаки по возможности."
+    },
+    {
+      "id": "lucky",
+      "name": "Везунчик",
+      "summary": "3 очка удачи за долгий отдых; можно перебрасывать атаку, проверку или спасбросок."
+    },
+    {
+      "id": "alert",
+      "name": "Бдительный",
+      "summary": "+5 к инициативе; нельзя застать врасплох; скрытость сама по себе не даёт по тебе преимущество.",
+      "modifiers": [
+        {
+          "target": "initiative",
+          "formula": "value + 5"
+        }
+      ]
+    },
+    {
+      "id": "dungeon-delver",
+      "name": "Исследователь подземелий",
+      "summary": "Преимущество на поиск ловушек и тайных дверей, преимущество на сейвы против ловушек, сопротивление урону от ловушек."
+    }
+  ],
+  "items": [
+    {
+      "id": "amulet-of-health",
+      "name": "Амулет здоровья",
+      "category": "wondrous",
+      "requiresAttunement": true,
+      "attuned": true,
+      "equipped": true,
+      "bonuses": {
+        "con": {
+          "score": "max(value, 19)"
+        }
+      },
+      "notes": [
+        "Телосложение становится 19, пока предмет настроен и надет."
+      ]
+    },
+    {
+      "id": "winged-boots",
+      "name": "Winged Boots",
+      "category": "wondrous",
+      "requiresAttunement": true,
+      "attuned": false,
+      "equipped": false,
+      "notes": [
+        "Полет со скоростью ходьбы до 4 часов в день."
+      ]
+    },
+    {
+      "id": "bag-of-holding",
+      "name": "Bag of Holding",
+      "category": "wondrous",
+      "requiresAttunement": false,
+      "equipped": false
+    },
+    {
+      "id": "luck-blade",
+      "name": "Клинок удачи",
+      "category": "weapon",
+      "requiresAttunement": true,
+      "attuned": false,
+      "equipped": false,
+      "charges": {
+        "wish": 1
+      },
+      "notes": [
+        "Осталось 1 исполнение желания."
+      ]
+    },
+    {
+      "id": "mantle-of-spell-resistance",
+      "name": "Мантия сопротивления заклинаниям",
+      "category": "wondrous",
+      "requiresAttunement": true,
+      "attuned": false,
+      "equipped": false,
+      "notes": [
+        "Преимущество на спасброски против заклинаний."
+      ]
+    },
+    {
+      "id": "apparatus-of-kwalish",
+      "name": "Аппарат Квалиша",
+      "category": "wondrous",
+      "requiresAttunement": false,
+      "equipped": false
+    },
+    {
+      "id": "potion-of-superior-healing",
+      "name": "Зелье превосходного лечения",
+      "category": "potion",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 1
+    }
+  ],
+  "spells": [
+    {
+      "id": "thunderwave",
+      "name": "Thunderwave",
+      "level": 1,
+      "castingTime": "action",
+      "range": "Self (15-футовый куб)",
+      "duration": "Мгновенно",
+      "summary": "Con save, 2d8 громом, отталкивает."
+    },
+    {
+      "id": "guiding-bolt",
+      "name": "Guiding Bolt",
+      "level": 1,
+      "castingTime": "action",
+      "range": "120 фт.",
+      "duration": "1 раунд",
+      "summary": "Атака заклинанием, 4d6 сияющим, следующая атака по цели с преимуществом."
+    },
+    {
+      "id": "flaming-sphere",
+      "name": "Flaming Sphere",
+      "level": 2,
+      "castingTime": "action",
+      "range": "60 фт.",
+      "duration": "Концентрация, до 1 минуты",
+      "summary": "Огненная сфера; позже двигается бонусным действием."
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "level": 3,
+      "castingTime": "action",
+      "range": "150 фт.",
+      "duration": "Мгновенно",
+      "summary": "Dex save, 8d6 огнем в радиусе 20 фт."
+    },
+    {
+      "id": "fly",
+      "name": "Fly",
+      "level": 3,
+      "castingTime": "action",
+      "range": "Касание",
+      "duration": "Концентрация, до 10 минут",
+      "summary": "Полет 60 фт."
+    },
+    {
+      "id": "haste",
+      "name": "Haste",
+      "level": 3,
+      "castingTime": "action",
+      "range": "30 фт.",
+      "duration": "Концентрация, до 1 минуты",
+      "summary": "+2 AC, скорость x2, преимущество на Dex сейвы, доп. действие."
+    },
+    {
+      "id": "water-walk",
+      "name": "Water Walk",
+      "level": 3,
+      "castingTime": "action",
+      "range": "30 фт.",
+      "duration": "1 час",
+      "summary": "До 10 существ могут ходить по жидкостям как по твердой поверхности."
+    },
+    {
+      "id": "wall-of-fire",
+      "name": "Wall of Fire",
+      "level": 4,
+      "castingTime": "action",
+      "range": "120 фт.",
+      "duration": "Концентрация, до 1 минуты",
+      "summary": "Стена огня, Dex save, 5d8 огнем."
+    },
+    {
+      "id": "freedom-of-movement",
+      "name": "Freedom of Movement",
+      "level": 4,
+      "castingTime": "action",
+      "range": "Касание",
+      "duration": "1 час",
+      "summary": "Игнорирует затруднение движения, паралич и магические ограничения скорости."
+    },
+    {
+      "id": "cone-of-cold",
+      "name": "Cone of Cold",
+      "level": 5,
+      "castingTime": "action",
+      "range": "Self (60-футовый конус)",
+      "duration": "Мгновенно",
+      "summary": "Con save, 8d8 холодом."
+    }
+  ],
+  "classFeatures": [
+    {
+      "id": "mystical-recovery",
+      "name": "Мистическое восстановление",
+      "kind": "bonus",
+      "summary": "После траты пси-очков на дисциплину бонусным действием восстанови хиты, равные потраченным пси-очкам."
+    },
+    {
+      "id": "telepathy",
+      "name": "Телепатия",
+      "kind": "passive",
+      "summary": "Телепатическое общение с видимым существом в пределах 120 фт."
+    },
+    {
+      "id": "psionic-enhancement",
+      "name": "Псионическое усиление",
+      "kind": "passive",
+      "summary": "Раз в ход при попадании оружием: +1d8 психического урона; таланты добавляют модификатор Интеллекта к броскам урона."
+    },
+    {
+      "id": "consumptive-power",
+      "name": "Истощающая сила",
+      "kind": "passive",
+      "summary": "1/долгий отдых можно платить хитами вместо пси-очков; падают и текущие, и максимальные хиты."
+    },
+    {
+      "id": "psionic-mastery",
+      "name": "Psionic Mastery",
+      "kind": "action",
+      "summary": "Действием получаешь 9 особых пси-очков; на 13 уровне доступно 2 раза за долгий отдых."
+    },
+    {
+      "id": "elemental-attunement",
+      "name": "Стихийная настройка",
+      "kind": "passive",
+      "summary": "Потрать 1 пси, чтобы игнорировать сопротивление к урону от твоей дисциплины."
+    },
+    {
+      "id": "arcane-dabbler",
+      "name": "Дилетант в тайной магии",
+      "kind": "bonus",
+      "summary": "Бонусным действием можно конвертировать пси-очки в ячейки заклинаний: 1ур=2, 2ур=3, 3ур=5, 4ур=6, 5ур=7."
+    }
+  ],
+  "disciplines": [
+    {
+      "id": "psionic-weapon",
+      "name": "Псионическое оружие",
+      "focus": "Выбранное оружие или безоружный удар наносят психический магический урон вместо обычного.",
+      "effects": [
+        {
+          "id": "ethereal-weapon",
+          "name": "Эфирное оружие",
+          "type": "bonus",
+          "cost": "1 пси",
+          "summary": "Следующая атака до конца хода не кидает атаку; цель делает Dex save."
+        },
+        {
+          "id": "lethal-strike",
+          "name": "Смертельный удар",
+          "type": "bonus",
+          "cost": "1-7 пси",
+          "summary": "Следующее успешное попадание до конца хода наносит +1d10 психического урона за каждое потраченное пси."
+        },
+        {
+          "id": "augmented-weapon",
+          "name": "Усиленное оружие",
+          "type": "bonus",
+          "cost": "5 пси",
+          "duration": "Концентрация, до 10 минут",
+          "summary": "Простое или воинское оружие становится магическим и получает +3 к атакам и урону."
+        }
+      ]
+    },
+    {
+      "id": "psionic-restoration",
+      "name": "Псионическое восстановление",
+      "focus": "Бонусным действием стабилизируешь существо с 0 хитами касанием.",
+      "effects": [
+        {
+          "id": "mend-wounds",
+          "name": "Лечение ран",
+          "type": "action",
+          "cost": "1-7 пси",
+          "summary": "Касанием восстанови 1d8 хитов за каждое потраченное пси."
+        },
+        {
+          "id": "restore-health",
+          "name": "Восстановление здоровья",
+          "type": "action",
+          "cost": "3 пси",
+          "summary": "Снимает оглохший, ослепленный, отравленный, парализованный или одну болезнь."
+        },
+        {
+          "id": "revivify-touch",
+          "name": "Возрождение",
+          "type": "action",
+          "cost": "5 пси",
+          "summary": "Поднимает существо, умершее в течение 1 минуты, с 1 хитом."
+        },
+        {
+          "id": "restore-vigor",
+          "name": "Восстановление бодрости",
+          "type": "action",
+          "cost": "7 пси",
+          "summary": "Убирает снижение характеристики, снижение максимума хитов или снижает истощение на 1."
+        }
+      ]
+    },
+    {
+      "id": "nomadic-step",
+      "name": "Предвидение",
+      "focus": "Преимущество на инициативу.",
+      "effects": [
+        {
+          "id": "precognitive-sense",
+          "name": "Вещее предчувствие",
+          "type": "bonus",
+          "cost": "2 пси",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "При каждом броске атаки, сейве и проверке добавляется 1d4."
+        },
+        {
+          "id": "all-around-vision",
+          "name": "Видение всего вокруг",
+          "type": "reaction",
+          "cost": "3 пси",
+          "summary": "Наложи помеху на успешную атаку по тебе."
+        },
+        {
+          "id": "danger-sense",
+          "name": "Чувство опасности",
+          "type": "action",
+          "cost": "5 пси",
+          "duration": "Концентрация, до 8 часов",
+          "summary": "Тебя нельзя застать врасплох, по тебе не атакуют с преимуществом, +10 к инициативе."
+        },
+        {
+          "id": "victory-before-battle",
+          "name": "Предрешённая победа",
+          "type": "special",
+          "cost": "7 пси",
+          "summary": "Когда кидаешь инициативу, ты и до 5 существ в 60 фт. получаете +10 к инициативе."
+        }
+      ]
+    },
+    {
+      "id": "mastery-of-force",
+      "name": "Мастерство Силы",
+      "focus": "Преимущество на проверки Силы.",
+      "effects": [
+        {
+          "id": "push",
+          "name": "Толчок",
+          "type": "action",
+          "cost": "1-7 пси",
+          "summary": "Str save; 1d8 силовым полем за пси и отбрасывание на 5 фт. за пси."
+        },
+        {
+          "id": "move-object",
+          "name": "Перемещение",
+          "type": "action",
+          "cost": "2-7 пси",
+          "summary": "Телекинетически двигает предмет на 60 фт."
+        },
+        {
+          "id": "inertial-armor",
+          "name": "Инерциальная броня",
+          "type": "action",
+          "cost": "2 пси",
+          "duration": "8 часов",
+          "summary": "Без доспеха AC = 14 + Dex mod; сопротивление к урону силовым полем."
+        },
+        {
+          "id": "telekinetic-barrier",
+          "name": "Телекинетический барьер",
+          "type": "action",
+          "cost": "3 пси",
+          "duration": "Концентрация, до 10 минут",
+          "summary": "Стена 40x10x1 фт.; каждая 10-футовая секция имеет AC 10 и 10 хитов."
+        },
+        {
+          "id": "telekinetic-grasp",
+          "name": "Захват",
+          "type": "action",
+          "cost": "3 пси",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Str save; при провале цель схвачена телекинетически."
+        },
+        {
+          "id": "grasp-crush",
+          "name": "Сдавить",
+          "type": "action",
+          "cost": "1-7 пси",
+          "summary": "Пока цель схвачена: 1d6 дробящего урона за пси."
+        },
+        {
+          "id": "grasp-move",
+          "name": "Перемещение цели",
+          "type": "action",
+          "cost": "1-7 пси",
+          "summary": "Пока цель схвачена: перемести её на 5 фт. за каждое потраченное пси."
+        }
+      ]
+    },
+    {
+      "id": "mastery-of-fire",
+      "name": "Мастерство огня",
+      "focus": "Сопротивление огню и +2 к броскам урона огнем.",
+      "effects": [
+        {
+          "id": "combustion",
+          "name": "Сожжение",
+          "type": "action",
+          "cost": "1-7 пси",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Con save; 1d10 огнем за пси и цель может загореться."
+        },
+        {
+          "id": "flame-breath",
+          "name": "Пламенный смерч",
+          "type": "action",
+          "cost": "3 пси",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Куб огня 20 фт.; существа внутри получают 5 урона огнем."
+        },
+        {
+          "id": "detonation",
+          "name": "Взрыв",
+          "type": "action",
+          "cost": "5 пси",
+          "summary": "Con save; 7d6 огнем в радиусе 20 фт.; при провале цель падает ничком."
+        },
+        {
+          "id": "fire-form",
+          "name": "Огненная форма",
+          "type": "bonus",
+          "cost": "5 пси",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Существа в 5 фт. получают 3d6 огнем в конце хода."
+        },
+        {
+          "id": "animate-fire",
+          "name": "Оживший огонь",
+          "type": "action",
+          "cost": "7 пси",
+          "duration": "Концентрация, до 1 часа",
+          "summary": "Призывает элементаля огня."
+        }
+      ]
+    },
+    {
+      "id": "fortress-of-the-mind",
+      "name": "Крепость интеллекта",
+      "focus": "Сопротивление психическому урону.",
+      "effects": [
+        {
+          "id": "psychic-backlash",
+          "name": "Психическое противодействие",
+          "type": "reaction",
+          "cost": "2 пси",
+          "summary": "Помеха на атаку по тебе; если атака всё же попала, атакующий получает 2d10 психического урона."
+        },
+        {
+          "id": "psychic-parry",
+          "name": "Психическое парирование",
+          "type": "reaction",
+          "cost": "1-7 пси",
+          "summary": "После броска, но до результата: +1 за пси к сейву Int, Wis или Cha."
+        },
+        {
+          "id": "psychic-redoubt",
+          "name": "Психический редут",
+          "type": "action",
+          "cost": "5 пси",
+          "duration": "Концентрация, до 10 минут",
+          "summary": "Выбранные существа получают сопротивление психическому урону и преимущество на Int/Wis/Cha сейвы."
+        }
+      ]
+    }
+  ],
+  "talents": [
+    {
+      "id": "mind-thrust",
+      "name": "Ментальный удар",
+      "type": "action",
+      "range": "60 фт.",
+      "save": "Телосложение",
+      "damage": {
+        "die": "d6",
+        "baseDiceByLevel": {
+          "1": 1,
+          "5": 2,
+          "11": 3,
+          "17": 4
+        },
+        "abilityModifier": "int",
+        "damageType": "силовым полем"
+      },
+      "summary": "При провале получает урон; если цель получила урон и не больше Большого размера, она падает ничком."
+    },
+    {
+      "id": "blind-spot",
+      "name": "Слепое пятно",
+      "type": "action",
+      "range": "120 фт.",
+      "save": "Мудрость",
+      "summary": "При провале ты становишься для цели невидимым до конца следующего хода."
+    },
+    {
+      "id": "energy-beam",
+      "name": "Луч энергии",
+      "type": "action",
+      "range": "90 фт.",
+      "save": "Ловкость",
+      "damage": {
+        "die": "d8",
+        "baseDiceByLevel": {
+          "1": 1,
+          "5": 2,
+          "11": 3,
+          "17": 4
+        },
+        "abilityModifier": "int",
+        "damageType": "звук / кислота / огонь / холод / электричество"
+      },
+      "summary": "Тип урона выбирается при использовании."
+    }
+  ],
+  "stateDefaults": {
+    "hpCurrent": 120,
+    "tempHp": 0,
+    "maxHpAdjustment": 0,
+    "psiPointsCurrent": 64,
+    "hitDiceCurrent": 13,
+    "luckyPointsCurrent": 3,
+    "psionicMasteryUsesCurrent": 2,
+    "conditions": [],
+    "concentration": {
+      "active": false,
+      "name": ""
+    },
+    "psionicFocusId": null,
+    "activeEffectIds": [],
+    "notes": ""
+  },
+  "effectPresets": [
+    {
+      "id": "haste",
+      "name": "Haste",
+      "source": "Заклинание",
+      "duration": "Концентрация, до 1 минуты",
+      "modifiers": [
+        {
+          "target": "armorClass",
+          "formula": "value + 2"
+        },
+        {
+          "target": "speed.walk",
+          "formula": "value * 2"
+        }
+      ],
+      "notes": [
+        "Преимущество на спасброски Ловкости.",
+        "Дополнительное действие каждый ход."
+      ]
+    },
+    {
+      "id": "danger-sense",
+      "name": "Чувство опасности",
+      "source": "Предвидение",
+      "duration": "Концентрация, до 8 часов",
+      "modifiers": [
+        {
+          "target": "initiative",
+          "formula": "value + 10"
+        }
+      ],
+      "notes": [
+        "Тебя нельзя застать врасплох.",
+        "По тебе не могут атаковать с преимуществом."
+      ]
+    },
+    {
+      "id": "predestined-victory",
+      "name": "Предрешённая победа",
+      "source": "Предвидение",
+      "modifiers": [
+        {
+          "target": "initiative",
+          "formula": "value + 10"
+        }
+      ],
+      "notes": [
+        "Бонус применяется только на бросок инициативы в начале боя."
+      ]
+    },
+    {
+      "id": "augmented-spear",
+      "name": "Усиленное оружие: копье",
+      "source": "Псионическое оружие",
+      "duration": "Концентрация, до 10 минут",
+      "weaponId": "spear",
+      "weaponModifiers": {
+        "attackBonus": "value + 3",
+        "damageBonus": "value + 3"
+      }
+    },
+    {
+      "id": "augmented-crossbow",
+      "name": "Усиленное оружие: ручной арбалет",
+      "source": "Псионическое оружие",
+      "duration": "Концентрация, до 10 минут",
+      "weaponId": "hand-crossbow",
+      "weaponModifiers": {
+        "attackBonus": "value + 3",
+        "damageBonus": "value + 3"
+      }
+    },
+    {
+      "id": "precognitive-sense",
+      "name": "Вещее предчувствие",
+      "source": "Предвидение",
+      "duration": "Концентрация, до 1 минуты",
+      "notes": [
+        "К каждой атаке, проверке и спасброску добавляется 1d4."
+      ]
+    },
+    {
+      "id": "psychic-redoubt",
+      "name": "Психический редут",
+      "source": "Крепость интеллекта",
+      "duration": "Концентрация, до 10 минут",
+      "notes": [
+        "Сопротивление психическому урону.",
+        "Преимущество на Int/Wis/Cha сейвы."
+      ]
+    }
+  ]
+}
