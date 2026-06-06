@@ -4,16 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Студент Призмари</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260607-ability-width" />
   </head>
   <body>
     <div class="page-shell">
       <header class="hero">
-        <div class="hero-copy">
+        <div class="hero-identity">
           <p class="eyebrow">UA Mystic 2017</p>
           <h1 id="hero-name">Загрузка...</h1>
           <p id="hero-subtitle" class="hero-subtitle"></p>
-          <div id="hero-tags" class="tag-row"></div>
+        </div>
+        <div class="hero-stats">
+          <div id="hero-tags" class="tag-row hero-tag-row"></div>
         </div>
         <div class="hero-actions">
           <button class="action-trigger" type="button" data-action-type="action" onclick="window.__openActions?.('action')">Действие</button>
@@ -26,19 +28,7 @@
       <main class="layout">
         <section class="primary-column">
           <section class="panel">
-            <div class="section-heading">
-              <h2>Характеристики</h2>
-            </div>
             <div id="abilities-grid" class="abilities-sheet"></div>
-          </section>
-
-          <section class="panel">
-            <div class="section-heading">
-              <h2>Бой</h2>
-              <p>Базовые значения плюс активные эффекты.</p>
-            </div>
-            <div id="combat-overview" class="combat-grid"></div>
-            <div id="weapons-grid" class="weapons-grid"></div>
           </section>
 
           <details class="panel collapsible">
@@ -88,18 +78,18 @@
                 <span id="temp-hp-summary" class="pill subtle hidden"></span>
                 <span id="concentration-dc" class="pill subtle hidden"></span>
               </div>
-              <div class="inline-controls">
-                <input id="hp-adjustment" type="number" inputmode="numeric" placeholder="Сумма" />
-                <button id="damage-button" class="small-button danger">Урон</button>
-                <button id="heal-button" class="small-button">Лечение</button>
+              <div class="inline-controls health-row health-row-dual">
+                <input id="hp-adjustment" class="health-input" type="number" inputmode="numeric" placeholder="HP" />
+                <button id="damage-button" class="small-button danger compact-health-button" type="button" aria-label="Нанести урон">-HP</button>
+                <button id="heal-button" class="small-button compact-health-button" type="button" aria-label="Вылечить">+HP</button>
               </div>
-              <div class="inline-controls">
-                <input id="temp-hp-input" type="number" inputmode="numeric" min="0" placeholder="Временные хиты" />
-                <button id="temp-hp-button" class="small-button">Задать temp HP</button>
+              <div class="inline-controls health-row health-row-single">
+                <input id="temp-hp-input" class="health-input" type="number" inputmode="numeric" min="0" placeholder="Temp HP" />
+                <button id="temp-hp-button" class="small-button ghost compact-health-button" type="button" aria-label="Задать временные хиты">Temp</button>
               </div>
-              <div class="inline-controls">
-                <input id="max-hp-adjustment" type="number" inputmode="numeric" placeholder="+/- к max HP" />
-                <button id="max-hp-button" class="small-button">Изменить max HP</button>
+              <div class="inline-controls health-row health-row-single">
+                <input id="max-hp-adjustment" class="health-input" type="number" inputmode="numeric" placeholder="Max HP ±" />
+                <button id="max-hp-button" class="small-button ghost compact-health-button" type="button" aria-label="Изменить максимум хитов">Max</button>
               </div>
             </div>
 
@@ -111,6 +101,11 @@
                 <label>Lucky <input id="lucky-input" type="number" min="0" max="3" /></label>
                 <label>Psionic Mastery <input id="mastery-input" type="number" min="0" /></label>
               </div>
+            </div>
+
+            <div id="spell-slots-block" class="state-block hidden">
+              <span class="field-label">Ячейки заклинаний</span>
+              <div id="spell-slots-editor" class="spell-slot-list"></div>
             </div>
 
             <div class="state-block">
@@ -169,8 +164,8 @@
         </div>
         <div class="modal-search-row">
           <input id="modal-search-input" type="search" placeholder="Поиск: концентрация, спасбросок, урон..." />
-          <button id="modal-search-button" class="small-button" type="button">Найти</button>
         </div>
+        <div id="modal-feedback" class="modal-feedback hidden"></div>
         <div id="modal-actions-list" class="modal-actions-list"></div>
       </section>
     </div>

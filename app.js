@@ -1,5 +1,15 @@
 const CHARACTER_URL = "./data/character.json";
 const STORAGE_KEY = "student-prizmari-combat-state-v1";
+const ARCANE_DABBLER_SLOT_COSTS = {
+  1: 2,
+  2: 3,
+  3: 5,
+  4: 6,
+  5: 7
+};
+const ACTION_TO_EFFECT_PRESET = {
+  "victory-before-battle": "predestined-victory"
+};
 
 const ABILITY_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
 const ABILITY_LABELS = {
@@ -75,6 +85,7 @@ const MYSTIC_PROGRESS = {
 let characterData;
 let runtimeState;
 let activeModalContext = null;
+let modalFeedbackText = "";
 
 async function main() {
   characterData = await loadCharacter();
@@ -101,7 +112,13 @@ function loadState(data) {
   }
 
   try {
-    return { ...defaults, ...JSON.parse(saved), concentration: { ...defaults.concentration, ...JSON.parse(saved).concentration } };
+    const parsed = JSON.parse(saved);
+    return {
+      ...defaults,
+      ...parsed,
+      concentration: { ...defaults.concentration, ...(parsed.concentration ?? {}) },
+      spellSlotsCurrent: { ...defaults.spellSlotsCurrent, ...(parsed.spellSlotsCurrent ?? {}) }
+    };
   } catch {
     return defaults;
   }
@@ -115,7 +132,6 @@ function render() {
   const derived = deriveCharacter(characterData, runtimeState);
   renderHero(derived);
   renderAbilities(derived);
-  renderCombat(derived);
   renderDisciplines(derived);
   renderTalents(derived);
   renderSpells(derived);
@@ -128,9 +144,12 @@ function render() {
   renderEffectsControls(derived);
   renderConditions(derived);
   renderState(derived);
+  renderSpellSlotsControls(derived);
 }
 
 window.__openActions = (type) => openActionsModal(type);
+window.__createSpellSlot = (level) => createSpellSlot(level);
+window.__spendSpellSlot = (level) => spendSpellSlot(level);
 
 function deriveCharacter(data, state) {
   const progression = MYSTIC_PROGRESS[data.identity.level];
@@ -160,6 +179,7 @@ function deriveCharacter(data, state) {
     initiative: abilities.dex.mod,
     speed: { walk: data.movement.walk },
     weapons: deriveWeapons(data, abilities, proficiencyBonus),
+    spellSlots: deriveSpellSlots(data, state),
     attunement: {
       current: data.items.filter((item) => item.requiresAttunement && item.attuned).length,
       max: 3
@@ -265,6 +285,27 @@ function deriveWeapons(data, abilities, proficiencyBonus) {
   });
 }
 
+function deriveSpellSlots(data, state) {
+  const enabled = data.classFeatures.some((feature) => feature.id === "arcane-dabbler");
+  if (!enabled) {
+    return { enabled: false, levels: [] };
+  }
+
+  const levels = Object.entries(ARCANE_DABBLER_SLOT_COSTS).map(([level, cost]) => {
+    const numericLevel = Number(level);
+    const current = Number(state.spellSlotsCurrent?.[level] ?? 0);
+
+    return {
+      level: numericLevel,
+      cost,
+      current,
+      creatable: Math.floor(Math.max(0, state.psiPointsCurrent) / cost)
+    };
+  });
+
+  return { enabled: true, levels };
+}
+
 function applyStaticModifiers(derived, sources) {
   for (const source of sources) {
     if (!source.modifiers) continue;
@@ -337,21 +378,29 @@ function buildActionLibrary(data) {
   for (const feature of data.classFeatures) {
     if (feature.kind === "passive") continue;
     actions.push({
+      id: feature.id,
+      kind: "feature",
       name: feature.name,
       type: normalizeActionType(feature.kind),
       source: "Умение класса",
-      summary: feature.summary
+      summary: feature.summary,
+      duration: feature.duration,
+      autoEffectPresetId: resolveActionEffectPresetId(data, feature.id)
     });
   }
 
   for (const spell of data.spells) {
     actions.push({
+      id: spell.id,
+      kind: "spell",
       name: spell.name,
       type: normalizeActionType(spell.castingTime),
       source: `Заклинание ${spell.level} уровня`,
+      spellLevel: spell.level,
       range: spell.range,
       duration: spell.duration,
-      summary: spell.summary
+      summary: spell.summary,
+      autoEffectPresetId: resolveActionEffectPresetId(data, spell.id)
     });
   }
 
@@ -360,30 +409,56 @@ function buildActionLibrary(data) {
       const type = normalizeActionType(effect.type);
       if (!type) continue;
       actions.push({
+        id: effect.id,
+        kind: "discipline",
         name: effect.name,
         type,
         source: discipline.name,
         cost: effect.cost,
         range: effect.range,
         duration: effect.duration,
-        summary: effect.summary
+        summary: effect.summary,
+        autoEffectPresetId: resolveActionEffectPresetId(data, effect.id)
       });
     }
   }
 
   for (const talent of data.talents) {
     actions.push({
+      id: talent.id,
+      kind: "talent",
       name: talent.name,
       type: normalizeActionType(talent.type),
       source: "Псионический талант",
       cost: "0 пси",
       range: talent.range,
       duration: talent.duration,
-      summary: talent.summary
+      summary: talent.summary,
+      autoEffectPresetId: resolveActionEffectPresetId(data, talent.id)
     });
   }
 
   actions.push({
+    id: "short-rest",
+    kind: "rest",
+    name: "Короткий отдых",
+    type: "special",
+    source: "Отдых",
+    summary: "1 час отдыха. Заканчивает короткие эффекты; пси и ячейки арканиста не восстанавливаются, лечение через кости хитов отмечается вручную."
+  });
+
+  actions.push({
+    id: "long-rest",
+    kind: "rest",
+    name: "Долгий отдых",
+    type: "special",
+    source: "Отдых",
+    summary: "8 часов отдыха. Восстанавливает хиты, пси, Lucky и Psionic Mastery; добавляет до половины костей хитов, сбрасывает психофокус и убирает созданные ячейки арканиста."
+  });
+
+  actions.push({
+    id: "potion-of-superior-healing",
+    kind: "item",
     name: "Зелье превосходного лечения",
     type: "action",
     source: "Предмет",
@@ -391,6 +466,8 @@ function buildActionLibrary(data) {
   });
 
   actions.push({
+    id: "wish-luck-blade",
+    kind: "item",
     name: "Wish (Клинок удачи)",
     type: "action",
     source: "Клинок удачи",
@@ -398,6 +475,14 @@ function buildActionLibrary(data) {
   });
 
   return actions;
+}
+
+function resolveActionEffectPresetId(data, actionId) {
+  if (data.effectPresets.some((effect) => effect.id === actionId)) {
+    return actionId;
+  }
+
+  return ACTION_TO_EFFECT_PRESET[actionId] ?? null;
 }
 
 function normalizeActionType(rawType) {
@@ -543,59 +628,6 @@ function renderAbilities(derived) {
       </article>
     `;
   }).join("");
-}
-
-function renderCombat(derived) {
-  const overview = [
-    { label: "Сложность спасброска", value: `${derived.spell.saveDC}` },
-    { label: "Пси / spell attack", value: `${formatModifier(derived.spell.attackBonus)}` },
-    { label: "Спасбросок Int", value: `${formatModifier(derived.saves.int)}` },
-    { label: "Спасбросок Wis", value: `${formatModifier(derived.saves.wis)}` }
-  ];
-
-  document.querySelector("#combat-overview").innerHTML = overview
-    .map(
-      (item) => `
-        <article class="resource-card">
-          <strong>${item.label}</strong>
-          <span>${item.value}</span>
-        </article>
-      `
-    )
-    .join("");
-
-  document.querySelector("#weapons-grid").innerHTML = derived.weapons
-    .map(
-      (weapon) => `
-        <article class="weapon-card">
-          <div class="weapon-row">
-            <strong>${weapon.name}</strong>
-            <span>${formatModifier(weapon.attackBonus)}</span>
-          </div>
-          <p>${weapon.damageDie}${weapon.damageBonus >= 0 ? "+" : ""}${weapon.damageBonus} ${weapon.damageType}</p>
-          <p>${weapon.properties.length ? weapon.properties.join(" · ") : "Без особых свойств"}</p>
-        </article>
-      `
-    )
-    .join("");
-}
-
-function renderSaves(derived) {
-  document.querySelector("#saving-throws-list").innerHTML = ABILITY_ORDER.map((key) => `
-    <div class="metric-row">
-      <strong>${derived.abilities[key].label}</strong>
-      <span>${formatModifier(derived.saves[key])}</span>
-    </div>
-  `).join("");
-}
-
-function renderSkills(derived) {
-  document.querySelector("#skills-list").innerHTML = Object.entries(SKILL_DEFINITIONS).map(([key, definition]) => `
-    <div class="metric-row">
-      <strong>${definition.label}</strong>
-      <span>${formatModifier(derived.skills[key])}</span>
-    </div>
-  `).join("");
 }
 
 function renderDisciplines(derived) {
@@ -759,7 +791,9 @@ function renderState(derived) {
   document.querySelector("#temp-hp-input").value = derived.state.tempHp;
   document.querySelector("#max-hp-adjustment").value = derived.state.maxHpAdjustment;
   document.querySelector("#concentration-active").checked = derived.state.concentration.active;
-  document.querySelector("#concentration-name").value = derived.state.concentration.name;
+  document.querySelector("#concentration-name").value = derived.state.concentration.active
+    ? derived.state.concentration.name
+    : "";
   document.querySelector("#combat-notes").value = derived.state.notes;
 
   const concentrationDc = document.querySelector("#concentration-dc");
@@ -772,11 +806,89 @@ function renderState(derived) {
   }
 }
 
+function applyHpAdjustment(sign) {
+  const amount = Math.abs(readNumber("#hp-adjustment"));
+  if (!amount) return;
+  applyHitChange(sign * amount);
+}
+
+function setTempHp() {
+  runtimeState.tempHp = Math.max(0, readNumber("#temp-hp-input"));
+  persistAndRender();
+}
+
+function setMaxHpAdjustment() {
+  runtimeState.maxHpAdjustment = readNumber("#max-hp-adjustment");
+  persistAndRender();
+}
+
+function renderSpellSlotsControls(derived) {
+  const block = document.querySelector("#spell-slots-block");
+  const container = document.querySelector("#spell-slots-editor");
+
+  if (!derived.spellSlots.enabled) {
+    block.classList.add("hidden");
+    container.innerHTML = "";
+    return;
+  }
+
+  block.classList.remove("hidden");
+  container.innerHTML = derived.spellSlots.levels.map((slot) => `
+    <div class="spell-slot-row">
+      <div class="spell-slot-main">
+        <strong>${slot.level} ур.</strong>
+        <span>${slot.cost} пси · еще ${slot.creatable}</span>
+      </div>
+      <span class="spell-slot-count">${slot.current}</span>
+      <div class="spell-slot-buttons">
+        <button
+          type="button"
+          class="slot-button"
+          onclick="window.__createSpellSlot?.(${slot.level})"
+          data-create-slot="${slot.level}"
+          title="Создать ячейку ${slot.level} уровня за ${slot.cost} пси"
+          aria-label="Создать ячейку ${slot.level} уровня за ${slot.cost} пси"
+          ${slot.creatable < 1 ? "disabled" : ""}
+        >+</button>
+        <button
+          type="button"
+          class="slot-button ghost"
+          onclick="window.__spendSpellSlot?.(${slot.level})"
+          data-spend-slot="${slot.level}"
+          title="Потратить ячейку ${slot.level} уровня"
+          aria-label="Потратить ячейку ${slot.level} уровня"
+          ${slot.current < 1 ? "disabled" : ""}
+        >−</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderModalFeedback() {
+  const feedback = document.querySelector("#modal-feedback");
+  if (!feedback) return;
+
+  if (!modalFeedbackText) {
+    feedback.classList.add("hidden");
+    feedback.textContent = "";
+    return;
+  }
+
+  feedback.classList.remove("hidden");
+  feedback.textContent = modalFeedbackText;
+}
+
 function wireUi() {
   document.addEventListener("click", (event) => {
     const actionButton = event.target.closest(".action-trigger");
     if (actionButton) {
       openActionsModal(actionButton.dataset.actionType);
+      return;
+    }
+
+    const applyActionCard = event.target.closest("[data-apply-action-id]");
+    if (applyActionCard) {
+      applyAction(applyActionCard.dataset.applyActionId);
       return;
     }
 
@@ -792,18 +904,30 @@ function wireUi() {
     }
   });
   document.querySelector("#close-modal-button").addEventListener("click", closeActionsModal);
-  document.querySelector("#modal-search-button").addEventListener("click", renderModalSearchResults);
   document.querySelector("#modal-search-input").addEventListener("input", renderModalSearchResults);
 
-  document.querySelector("#damage-button").addEventListener("click", () => applyHitChange(-readNumber("#hp-adjustment")));
-  document.querySelector("#heal-button").addEventListener("click", () => applyHitChange(readNumber("#hp-adjustment")));
-  document.querySelector("#temp-hp-button").addEventListener("click", () => {
-    runtimeState.tempHp = Math.max(0, readNumber("#temp-hp-input"));
-    persistAndRender();
+  document.querySelector("#damage-button").addEventListener("click", () => applyHpAdjustment(-1));
+  document.querySelector("#heal-button").addEventListener("click", () => applyHpAdjustment(1));
+  document.querySelector("#temp-hp-button").addEventListener("click", setTempHp);
+  document.querySelector("#max-hp-button").addEventListener("click", setMaxHpAdjustment);
+
+  document.querySelector("#hp-adjustment").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      applyHpAdjustment(1);
+    }
   });
-  document.querySelector("#max-hp-button").addEventListener("click", () => {
-    runtimeState.maxHpAdjustment = readNumber("#max-hp-adjustment");
-    persistAndRender();
+  document.querySelector("#temp-hp-input").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      setTempHp();
+    }
+  });
+  document.querySelector("#max-hp-adjustment").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      setMaxHpAdjustment();
+    }
   });
 
   for (const [selector, key] of [
@@ -825,6 +949,9 @@ function wireUi() {
 
   document.querySelector("#concentration-active").addEventListener("change", (event) => {
     runtimeState.concentration.active = event.target.checked;
+    if (!event.target.checked) {
+      runtimeState.concentration.name = "";
+    }
     persistAndRender();
   });
 
@@ -893,6 +1020,224 @@ function applyHitChange(delta) {
   persistAndRender();
 }
 
+function createSpellSlot(level) {
+  const cost = ARCANE_DABBLER_SLOT_COSTS[level];
+  if (!cost || runtimeState.psiPointsCurrent < cost) return;
+
+  runtimeState.psiPointsCurrent -= cost;
+  runtimeState.spellSlotsCurrent[level] = Number(runtimeState.spellSlotsCurrent[level] ?? 0) + 1;
+  persistAndRender();
+}
+
+function spendSpellSlot(level) {
+  const current = Number(runtimeState.spellSlotsCurrent[level] ?? 0);
+  if (current < 1) return;
+
+  runtimeState.spellSlotsCurrent[level] = current - 1;
+  persistAndRender();
+}
+
+function applyAction(actionId) {
+  const derived = deriveCharacter(characterData, runtimeState);
+  const action = derived.actionLibrary.find((entry) => entry.id === actionId);
+  if (!action) return;
+
+  if (action.kind === "rest") {
+    applyRest(action.id, derived);
+    modalFeedbackText = "";
+    persistAndRender();
+    closeActionsModal();
+    return;
+  }
+
+  const blockingReason = getActionBlockingReason(action);
+  if (blockingReason) {
+    modalFeedbackText = blockingReason;
+    renderModalFeedback();
+    return;
+  }
+
+  if (action.spellLevel) {
+    runtimeState.spellSlotsCurrent[action.spellLevel] = Math.max(
+      0,
+      Number(runtimeState.spellSlotsCurrent[action.spellLevel] ?? 0) - 1
+    );
+  }
+
+  const fixedPsiCost = parseFixedPsiCost(action.cost);
+  if (fixedPsiCost) {
+    runtimeState.psiPointsCurrent = Math.max(0, runtimeState.psiPointsCurrent - fixedPsiCost);
+  }
+
+  if (isConcentrationDuration(action.duration)) {
+    clearConcentrationEffects();
+  }
+
+  if (action.autoEffectPresetId) {
+    const nextEffects = new Set(runtimeState.activeEffectIds);
+    nextEffects.add(action.autoEffectPresetId);
+    runtimeState.activeEffectIds = [...nextEffects];
+  }
+
+  if (isConcentrationDuration(action.duration)) {
+    runtimeState.concentration.active = true;
+    runtimeState.concentration.name = action.name;
+  }
+
+  modalFeedbackText = "";
+  persistAndRender();
+  closeActionsModal();
+}
+
+function getActionBlockingReason(action) {
+  if (action.kind === "rest") {
+    return "";
+  }
+
+  if (action.spellLevel) {
+    const currentSlots = Number(runtimeState.spellSlotsCurrent[action.spellLevel] ?? 0);
+    if (currentSlots < 1) {
+      return `Нет доступной ячейки ${action.spellLevel} уровня. Сначала создай её в блоке ресурсов.`;
+    }
+  }
+
+  if (hasVariablePsiCost(action.cost)) {
+    return "Для этого действия нужно вручную выбрать, сколько пси-очков потратить.";
+  }
+
+  const fixedPsiCost = parseFixedPsiCost(action.cost);
+  if (fixedPsiCost > runtimeState.psiPointsCurrent) {
+    return `Недостаточно пси-очков: нужно ${fixedPsiCost}, сейчас ${runtimeState.psiPointsCurrent}.`;
+  }
+
+  if (action.id === "potion-of-superior-healing") {
+    return "Расход зелий пока не автоматизирован.";
+  }
+
+  if (action.id === "wish-luck-blade") {
+    return "Wish лучше отмечать вручную: эффект и формулировка зависят от решения мастера.";
+  }
+
+  if (action.id === "psionic-mastery") {
+    return "Psionic Mastery пока не автоматизирован: специальные пси-очки нужно отметить вручную.";
+  }
+
+  if (!action.autoEffectPresetId && !isConcentrationDuration(action.duration) && !action.spellLevel && !fixedPsiCost) {
+    return "Для этого действия пока нет безопасного автоматического применения.";
+  }
+
+  return "";
+}
+
+function clearConcentrationEffects() {
+  const concentrationEffectIds = new Set(
+    characterData.effectPresets
+      .filter((effect) => isConcentrationDuration(effect.duration))
+      .map((effect) => effect.id)
+  );
+
+  runtimeState.activeEffectIds = runtimeState.activeEffectIds.filter((id) => !concentrationEffectIds.has(id));
+}
+
+function applyRest(restId, derived) {
+  if (restId === "short-rest") {
+    applyShortRest(derived);
+    return;
+  }
+
+  if (restId === "long-rest") {
+    applyLongRest(derived);
+  }
+}
+
+function applyShortRest(derived) {
+  const remainingEffects = runtimeState.activeEffectIds.filter((effectId) => {
+    const effect = characterData.effectPresets.find((entry) => entry.id === effectId);
+    return effect && !expiresOnShortRest(effect);
+  });
+  runtimeState.activeEffectIds = remainingEffects;
+
+  if (runtimeState.concentration.active) {
+    const hasRemainingConcentrationEffect = remainingEffects.some((effectId) => {
+      const effect = characterData.effectPresets.find((entry) => entry.id === effectId);
+      return effect && isConcentrationDuration(effect.duration);
+    });
+
+    if (concentrationExpiresOnShortRest(derived) || (!runtimeState.concentration.name && !hasRemainingConcentrationEffect)) {
+      runtimeState.concentration.active = false;
+      runtimeState.concentration.name = "";
+    }
+  }
+}
+
+function applyLongRest(derived) {
+  const effectiveMaxHp = derived.hpMax + runtimeState.maxHpAdjustment;
+  const recoveredHitDice = Math.max(1, Math.floor(derived.data.identity.level / 2));
+
+  runtimeState.hpCurrent = Math.max(0, effectiveMaxHp);
+  runtimeState.tempHp = 0;
+  runtimeState.psiPointsCurrent = derived.progression.psiPoints;
+  runtimeState.spellSlotsCurrent = Object.fromEntries(
+    Object.keys(characterData.stateDefaults.spellSlotsCurrent).map((level) => [level, 0])
+  );
+  runtimeState.hitDiceCurrent = Math.min(
+    derived.data.identity.level,
+    runtimeState.hitDiceCurrent + recoveredHitDice
+  );
+  runtimeState.luckyPointsCurrent = characterData.stateDefaults.luckyPointsCurrent;
+  runtimeState.psionicMasteryUsesCurrent = derived.progression.psionicMasteryUses;
+  runtimeState.concentration.active = false;
+  runtimeState.concentration.name = "";
+  runtimeState.psionicFocusId = null;
+  runtimeState.activeEffectIds = [];
+}
+
+function concentrationExpiresOnShortRest(derived) {
+  const effectByName = characterData.effectPresets.find((effect) => effect.name === runtimeState.concentration.name);
+  if (effectByName) {
+    return expiresOnShortRest(effectByName);
+  }
+
+  const actionByName = derived.actionLibrary.find((action) => action.name === runtimeState.concentration.name);
+  return actionByName ? durationExpiresOnShortRest(actionByName.duration) : false;
+}
+
+function expiresOnShortRest(effect) {
+  if (effect.id === "predestined-victory") {
+    return true;
+  }
+
+  return durationExpiresOnShortRest(effect.duration);
+}
+
+function durationExpiresOnShortRest(duration) {
+  const normalized = String(duration ?? "").trim().toLowerCase().replace(/ё/g, "е");
+  if (!normalized) return false;
+
+  if (/раунд|мгновенн|мину/.test(normalized)) {
+    return true;
+  }
+
+  if (/до\s*1\s*час/.test(normalized) || /^1\s*час$/.test(normalized)) {
+    return true;
+  }
+
+  return false;
+}
+
+function parseFixedPsiCost(cost) {
+  const match = String(cost ?? "").trim().match(/^(\d+)\s*пси$/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function hasVariablePsiCost(cost) {
+  return /\d+\s*-\s*\d+\s*пси/i.test(String(cost ?? ""));
+}
+
+function isConcentrationDuration(duration) {
+  return /^концентрация/i.test(String(duration ?? "").trim());
+}
+
 function persistAndRender() {
   saveState();
   render();
@@ -904,9 +1249,11 @@ function openActionsModal(type) {
   const actions = derived.actionLibrary.filter((action) => action.type === type);
 
   activeModalContext = { type, actions };
+  modalFeedbackText = "";
   document.querySelector("#modal-type-label").textContent = humanActionType(type);
   document.querySelector("#modal-title").textContent = titleByActionType(type);
   document.querySelector("#modal-search-input").value = "";
+  renderModalFeedback();
   renderModalSearchResults();
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden", "false");
@@ -916,6 +1263,8 @@ function openActionsModal(type) {
 function closeActionsModal() {
   const modal = document.querySelector("#actions-modal");
   activeModalContext = null;
+  modalFeedbackText = "";
+  renderModalFeedback();
   modal.classList.add("hidden");
   modal.setAttribute("aria-hidden", "true");
 }
@@ -931,7 +1280,7 @@ function renderModalSearchResults() {
 
   document.querySelector("#modal-actions-list").innerHTML = filteredActions.length
     ? filteredActions.map((action) => `
-        <article class="modal-card">
+        <article class="modal-card modal-action-card" data-apply-action-id="${action.id}">
           <strong>${action.name}</strong>
           <p>${action.summary}</p>
           <div class="detail-row"><span>${action.source}</span><span>${action.cost ?? "без стоимости"}</span></div>

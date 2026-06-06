@@ -12,12 +12,13 @@
   --teal: #1b5f5b;
   --danger: #9a3f2f;
   --shadow: 0 20px 60px rgba(63, 43, 16, 0.12);
-  --radius: 22px;
-  --radius-sm: 14px;
-  --page-gutter: clamp(6px, 1vw, 14px);
-  --section-gap: clamp(10px, 1.4vw, 18px);
-  --hero-padding: clamp(16px, 2vw, 28px);
-  --panel-padding: clamp(14px, 1.6vw, 20px);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --page-gutter: clamp(4px, 0.8vw, 10px);
+  --section-gap: clamp(8px, 1.1vw, 14px);
+  --hero-padding: clamp(12px, 1.4vw, 18px);
+  --panel-padding: clamp(10px, 1.2vw, 14px);
+  --ability-column-width: 192px;
   --display-font: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
   --body-font: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
 }
@@ -59,8 +60,11 @@ body {
 
 .hero {
   display: grid;
-  grid-template-columns: 1.4fr 0.9fr;
-  gap: var(--section-gap);
+  grid-template-columns: max-content minmax(0, 1fr) minmax(280px, 540px);
+  grid-template-areas: "identity stats actions";
+  column-gap: 10px;
+  row-gap: 8px;
+  align-items: start;
   padding: var(--hero-padding);
   border-radius: calc(var(--radius) + 4px);
   background:
@@ -70,11 +74,31 @@ body {
   box-shadow: var(--shadow);
 }
 
+.hero-identity,
+.hero-stats {
+  min-width: 0;
+}
+
+.hero-identity {
+  grid-area: identity;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  max-width: none;
+}
+
+.hero-stats {
+  grid-area: stats;
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
 .eyebrow {
-  margin: 0 0 10px;
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--gold);
 }
 
@@ -88,7 +112,7 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
   overflow-wrap: anywhere;
 }
 
@@ -109,23 +133,25 @@ h3 {
 .currency-box,
 .plain-list,
 .panel summary,
-.weapon-card p,
 .modal-card p {
   color: var(--muted);
 }
 
 .hero-subtitle {
-  margin: 10px 0 0;
-  font-size: 1rem;
-  max-width: 42rem;
+  margin: 0;
+  font-size: 0.95rem;
+  max-width: none;
 }
 
 .hero-actions {
+  grid-area: actions;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
   align-content: start;
   min-width: 0;
+  width: min(100%, 540px);
+  justify-self: end;
 }
 
 .action-trigger,
@@ -137,10 +163,10 @@ h3 {
 }
 
 .action-trigger {
-  min-height: 46px;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 7px 12px;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.15;
   color: #fffdf9;
@@ -182,9 +208,9 @@ h3 {
 .section-heading {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   align-items: end;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .section-heading p {
@@ -194,10 +220,6 @@ h3 {
 }
 
 .tag-row,
-.resource-strip,
-.abilities-grid,
-.combat-grid,
-.weapons-grid,
 .chip-list,
 .conditions-grid {
   display: grid;
@@ -207,7 +229,13 @@ h3 {
 .tag-row {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 8px;
+}
+
+.hero-tag-row {
+  margin-top: 0;
+  gap: 6px;
+  align-content: flex-start;
 }
 
 .tag,
@@ -215,11 +243,11 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: var(--gold-soft);
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
 }
 
 .tag.with-icon {
@@ -228,8 +256,8 @@ h3 {
 }
 
 .tag-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -238,8 +266,8 @@ h3 {
 }
 
 .tag-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: block;
 }
 
@@ -258,8 +286,6 @@ h3 {
   color: var(--teal);
 }
 
-.resource-card,
-.weapon-card,
 .metric-row,
 .stack-card,
 .modal-card {
@@ -268,24 +294,11 @@ h3 {
   border-radius: var(--radius-sm);
 }
 
-.resource-card {
-  padding: 14px 12px;
-}
-
-.resource-card strong,
-.weapon-card strong,
+.metric-row strong,
 .metric-row strong,
 .stack-card strong,
 .modal-card strong {
   display: block;
-}
-
-.resource-card span,
-.metric-row span {
-  display: block;
-  margin-top: 6px;
-  font-weight: 700;
-  font-size: 1.15rem;
 }
 
 .abilities-sheet {
@@ -299,12 +312,13 @@ h3 {
 
 .ability-row-sheet {
   display: grid;
-  grid-template-columns: 156px minmax(0, 1fr);
+  grid-template-columns: var(--ability-column-width) minmax(0, 1fr);
   min-width: 0;
 }
 
 .ability-row-sheet.no-ledger {
-  grid-template-columns: 1fr;
+  grid-template-columns: var(--ability-column-width);
+  justify-content: start;
 }
 
 .ability-row-sheet + .ability-row-sheet {
@@ -312,24 +326,25 @@ h3 {
 }
 
 .ability-box {
-  padding: 10px;
+  padding: 8px;
   border-right: 1px solid var(--line);
   background: rgba(141, 101, 38, 0.03);
 }
 
 .ability-row-sheet.no-ledger .ability-box {
   border-right: 0;
+  max-width: var(--ability-column-width);
 }
 
 .ability-frame {
   position: relative;
   min-height: 100%;
-  padding: 12px 14px 10px;
+  padding: 10px 12px 8px;
   border: 1px solid rgba(78, 63, 41, 0.16);
   border-radius: 20px 20px 10px 10px;
   background: rgba(255, 252, 246, 0.78);
   display: grid;
-  gap: 8px;
+  gap: 6px;
   align-content: start;
 }
 
@@ -342,7 +357,7 @@ h3 {
 .ability-main {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   align-items: baseline;
 }
 
@@ -381,22 +396,22 @@ h3 {
 }
 
 .ability-ledger {
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .ledger-skills {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 18px;
+  gap: 6px 14px;
 }
 
 .ledger-line {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
 }
@@ -439,23 +454,9 @@ h3 {
   box-shadow: inset 0 0 0 2px rgba(255, 252, 246, 0.85);
 }
 
-.combat-grid {
-  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
-  margin-bottom: 12px;
-}
-
-.weapons-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.weapon-card {
-  padding: 14px;
-}
-
-.weapon-card p,
 .stack-card p,
 .modal-card p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
 }
 
 .weapon-row,
@@ -466,7 +467,7 @@ h3 {
 .modal-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -480,14 +481,14 @@ h3 {
 .metric-list,
 .stack-list {
   display: grid;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .metric-row,
 .stack-card,
 .modal-card {
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .metric-row span {
@@ -497,17 +498,17 @@ h3 {
 
 .detail-row {
   font-size: 0.92rem;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .plain-list {
-  margin-top: 14px;
+  margin-top: 10px;
   line-height: 1.55;
 }
 
 .currency-box {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
   line-height: 1.55;
 }
@@ -518,14 +519,14 @@ h3 {
 }
 
 .state-block + .state-block {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
 }
 
 .field-label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 0.9rem;
   color: var(--gold);
   font-weight: 700;
@@ -537,7 +538,7 @@ input,
 select,
 textarea {
   width: 100%;
-  padding: 11px 12px;
+  padding: 9px 11px;
   border-radius: 12px;
   border: 1px solid rgba(78, 63, 41, 0.18);
   background: rgba(255, 252, 246, 0.9);
@@ -561,7 +562,7 @@ textarea {
 }
 
 .inline-controls {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .inline-controls > * {
@@ -569,21 +570,120 @@ textarea {
   min-width: 0;
 }
 
+.hp-line {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.health-row {
+  display: grid;
+  align-items: center;
+  gap: 6px;
+}
+
+.health-row > * {
+  min-width: 0;
+}
+
+.health-row-dual {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.health-row-single {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.health-input {
+  min-width: 0;
+}
+
+.compact-health-button {
+  min-width: 58px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex: none;
+}
+
 .resource-editor {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .resource-editor label {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   font-size: 0.9rem;
   color: var(--muted);
 }
 
+.spell-slot-list {
+  display: grid;
+  gap: 6px;
+}
+
+.spell-slot-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 248, 236, 0.7);
+}
+
+.spell-slot-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.spell-slot-main strong {
+  font-size: 0.92rem;
+}
+
+.spell-slot-main span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.spell-slot-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.spell-slot-buttons {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.slot-button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(27, 95, 91, 0.12);
+  color: var(--teal);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.slot-button.ghost {
+  background: rgba(99, 88, 74, 0.1);
+  color: var(--muted);
+}
+
 .small-button {
-  padding: 11px 12px;
+  padding: 9px 11px;
   border-radius: 12px;
   background: rgba(27, 95, 91, 0.12);
   color: var(--teal);
@@ -600,6 +700,12 @@ textarea {
   color: var(--muted);
 }
 
+.small-button:disabled,
+.slot-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .toggle {
   display: inline-flex;
   gap: 8px;
@@ -613,15 +719,15 @@ textarea {
 
 .chip-list {
   grid-template-columns: 1fr;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .chip {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 14px;
   border: 1px solid var(--line);
   background: rgba(255, 248, 236, 0.94);
@@ -642,8 +748,8 @@ textarea {
 .condition-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 7px;
+  padding: 8px 10px;
   border-radius: 14px;
   border: 1px solid var(--line);
   background: rgba(255, 248, 236, 0.7);
@@ -661,8 +767,8 @@ textarea {
 }
 
 .note-box {
-  margin-top: 10px;
-  padding: 12px 14px;
+  margin-top: 8px;
+  padding: 10px 12px;
   border-radius: 14px;
   background: rgba(141, 101, 38, 0.08);
   min-height: 44px;
@@ -693,7 +799,7 @@ textarea {
 }
 
 .collapsible[open] summary {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .actions-modal {
@@ -721,35 +827,50 @@ textarea {
   background: rgba(255, 249, 240, 0.98);
   border: 1px solid var(--line);
   box-shadow: 0 30px 80px rgba(46, 31, 12, 0.24);
-  padding: 22px;
+  padding: 18px;
 }
 
 .modal-header {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .modal-search-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 10px;
 }
 
 .modal-search-row input {
   min-width: 0;
 }
 
-.modal-search-row .small-button {
-  white-space: nowrap;
-  padding-inline: 16px;
+.modal-feedback {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(154, 63, 47, 0.1);
+  color: var(--danger);
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .modal-actions-list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   max-height: 70vh;
   overflow: auto;
   padding-right: 4px;
+}
+
+.modal-action-card {
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.modal-action-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(27, 95, 91, 0.24);
+  box-shadow: 0 10px 24px rgba(63, 43, 16, 0.08);
 }
 
 .icon-button {
@@ -770,13 +891,57 @@ textarea {
     padding: 10px;
   }
 
-  .layout,
   .hero {
     grid-template-columns: 1fr;
   }
 
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    grid-template-areas:
+      "identity"
+      "stats"
+      "actions";
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .hero-actions {
+    justify-self: stretch;
+    width: 100%;
+  }
+
   .state-panel {
     position: static;
+  }
+
+  .ability-row-sheet {
+    grid-template-columns: 1fr;
+  }
+
+  .ability-row-sheet.no-ledger {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .ability-box {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ability-row-sheet.no-ledger .ability-box {
+    border-bottom: 0;
+    max-width: none;
+  }
+
+  .ability-frame {
+    border-radius: 16px 16px 8px 8px;
+  }
+
+  .ability-ledger {
+    padding: 12px;
   }
 
   .ledger-skills {
@@ -801,27 +966,6 @@ textarea {
     gap: 10px;
   }
 
-  .ability-row-sheet {
-    grid-template-columns: 1fr;
-  }
-
-  .ability-box {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .ability-row-sheet.no-ledger .ability-box {
-    border-bottom: 0;
-  }
-
-  .ability-frame {
-    border-radius: 16px 16px 8px 8px;
-  }
-
-  .ability-ledger {
-    padding: 12px;
-  }
-
   .section-heading {
     gap: 10px;
     margin-bottom: 12px;
@@ -832,8 +976,8 @@ textarea {
   }
 
   .action-trigger {
-    min-height: 42px;
-    padding: 8px 10px;
+    min-height: 38px;
+    padding: 7px 10px;
     font-size: 0.88rem;
     line-height: 1.15;
   }
@@ -847,9 +991,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .inline-controls {
+  .inline-controls:not(.health-row) {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .health-row {
+    gap: 6px;
+  }
+
+  .compact-health-button {
+    min-width: 52px;
+    height: 34px;
   }
 }
 
