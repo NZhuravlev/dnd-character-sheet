@@ -312,12 +312,12 @@ h3 {
 
 .ability-row-sheet {
   display: grid;
-  grid-template-columns: var(--ability-column-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, min(100%, var(--ability-column-width))) minmax(0, 1fr);
   min-width: 0;
 }
 
 .ability-row-sheet.no-ledger {
-  grid-template-columns: var(--ability-column-width);
+  grid-template-columns: minmax(0, min(100%, var(--ability-column-width)));
   justify-content: start;
 }
 
@@ -329,9 +329,11 @@ h3 {
   padding: 8px;
   border-right: 1px solid var(--line);
   background: rgba(141, 101, 38, 0.03);
+  min-width: 0;
 }
 
 .ability-row-sheet.no-ledger .ability-box {
+  width: min(100%, var(--ability-column-width));
   border-right: 0;
   max-width: var(--ability-column-width);
 }
@@ -352,6 +354,7 @@ h3 {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
 }
 
 .ability-main {
