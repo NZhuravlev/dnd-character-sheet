@@ -501,6 +501,7 @@ function formatModifier(value) {
 }
 
 function renderHero(derived) {
+  document.title = derived.data.identity.name;
   document.querySelector("#hero-name").textContent = derived.data.identity.name;
   document.querySelector("#hero-subtitle").textContent =
     `${derived.data.identity.className} ${derived.data.identity.level} · ${derived.data.identity.subclassName}`;
@@ -694,6 +695,7 @@ function renderFeats(derived) {
 function renderItems(derived) {
   document.querySelector("#items-list").innerHTML = derived.data.items.map((item) => {
     const tags = [
+      item.equipped ? "надет" : null,
       item.requiresAttunement ? (item.attuned ? "настроен" : "требует настройки") : null,
       item.consumed ? "использован" : null,
       item.quantity ? `x${item.quantity}` : null
@@ -710,7 +712,16 @@ function renderItems(derived) {
 }
 
 function renderEquipment(derived) {
+  const equippedItems = [
+    ...(derived.data.combat.armor?.equipped ? [derived.data.combat.armor.name] : []),
+    ...derived.data.items
+      .filter((item) => item.equipped)
+      .map((item) => item.requiresAttunement && item.attuned ? `${item.name} (настроен)` : item.name)
+  ];
+
   document.querySelector("#equipment-list").innerHTML = `
+    <strong>Экипировка</strong><br />
+    ${equippedItems.length ? equippedItems.join("<br />") : "—"}<br /><br />
     <strong>Обычное снаряжение</strong><br />
     ${derived.data.equipment.join("<br />")}
   `;

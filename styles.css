@@ -319,6 +319,8 @@ h3 {
 .ability-row-sheet.no-ledger {
   grid-template-columns: minmax(0, min(100%, var(--ability-column-width)));
   justify-content: start;
+  justify-self: start;
+  width: min(100%, calc(var(--ability-column-width) + 16px));
 }
 
 .ability-row-sheet + .ability-row-sheet {
@@ -927,6 +929,8 @@ textarea {
   .ability-row-sheet.no-ledger {
     grid-template-columns: 1fr;
     justify-content: stretch;
+    justify-self: stretch;
+    width: auto;
   }
 
   .ability-box {

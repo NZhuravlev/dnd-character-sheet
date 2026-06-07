@@ -153,8 +153,8 @@
       "name": "Winged Boots",
       "category": "wondrous",
       "requiresAttunement": true,
-      "attuned": false,
-      "equipped": false,
+      "attuned": true,
+      "equipped": true,
       "notes": [
         "Полет со скоростью ходьбы до 4 часов в день."
       ]
@@ -185,8 +185,8 @@
       "name": "Мантия сопротивления заклинаниям",
       "category": "wondrous",
       "requiresAttunement": true,
-      "attuned": false,
-      "equipped": false,
+      "attuned": true,
+      "equipped": true,
       "notes": [
         "Преимущество на спасброски против заклинаний."
       ]
