@@ -383,6 +383,7 @@ function buildActionLibrary(data) {
       name: feature.name,
       type: normalizeActionType(feature.kind),
       source: "Умение класса",
+      cost: feature.cost,
       summary: feature.summary,
       duration: feature.duration,
       autoEffectPresetId: resolveActionEffectPresetId(data, feature.id)

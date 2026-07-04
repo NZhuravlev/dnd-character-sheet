@@ -9,8 +9,8 @@
     "name": "Скив",
     "className": "Mystic",
     "subclassName": "Орден Ву Дзень",
-    "level": 13,
-    "xp": 120000,
+    "level": 14,
+    "xp": 140000,
     "background": "свое проис.",
     "species": null
   },
@@ -18,7 +18,7 @@
     "str": 13,
     "dex": 14,
     "con": 12,
-    "int": 21,
+    "int": 25,
     "wis": 14,
     "cha": 12
   },
@@ -90,7 +90,7 @@
     ]
   },
   "currency": {
-    "pp": 23691,
+    "pp": 13691,
     "gp": 13985
   },
   "equipment": [
@@ -205,6 +205,19 @@
       "requiresAttunement": false,
       "equipped": false,
       "quantity": 1
+    },
+    {
+      "id": "tome-of-clear-thought-read",
+      "name": "Tome of Clear Thought",
+      "category": "wondrous",
+      "requiresAttunement": false,
+      "equipped": false,
+      "consumed": true,
+      "quantity": 2,
+      "notes": [
+        "Куплено и прочитано 2 тома; Интеллект увеличен на +4, максимум Интеллекта также увеличен на +4.",
+        "Цена учтена как 50 000 зм за том, всего 100 000 зм."
+      ]
     }
   ],
   "spells": [
@@ -236,13 +249,13 @@
       "summary": "Огненная сфера; позже двигается бонусным действием."
     },
     {
-      "id": "fireball",
-      "name": "Fireball",
+      "id": "counterspell",
+      "name": "Counterspell",
       "level": 3,
-      "castingTime": "action",
-      "range": "150 фт.",
+      "castingTime": "reaction",
+      "range": "60 фт.",
       "duration": "Мгновенно",
-      "summary": "Dex save, 8d6 огнем в радиусе 20 фт."
+      "summary": "Реакция на сотворение заклинания: 3 уровень и ниже срывается автоматически; выше — проверка Интеллекта против DC 10 + уровень заклинания."
     },
     {
       "id": "fly",
@@ -316,7 +329,7 @@
       "id": "psionic-enhancement",
       "name": "Псионическое усиление",
       "kind": "passive",
-      "summary": "Раз в ход при попадании оружием: +1d8 психического урона; таланты добавляют модификатор Интеллекта к броскам урона."
+      "summary": "Раз в ход при попадании оружием: +2d8 психического урона; таланты добавляют модификатор Интеллекта к броскам урона."
     },
     {
       "id": "consumptive-power",
@@ -328,7 +341,7 @@
       "id": "psionic-mastery",
       "name": "Psionic Mastery",
       "kind": "action",
-      "summary": "Действием получаешь 9 особых пси-очков; на 13 уровне доступно 2 раза за долгий отдых."
+      "summary": "Действием получаешь 9 особых пси-очков; доступно 2 раза за долгий отдых."
     },
     {
       "id": "elemental-attunement",
@@ -341,6 +354,13 @@
       "name": "Дилетант в тайной магии",
       "kind": "bonus",
       "summary": "Бонусным действием можно конвертировать пси-очки в ячейки заклинаний: 1ур=2, 2ур=3, 3ур=5, 4ур=6, 5ур=7."
+    },
+    {
+      "id": "elemental-mastery",
+      "name": "Стихийное мастерство",
+      "kind": "reaction",
+      "cost": "2 пси",
+      "summary": "Когда получаешь урон типа, к которому у тебя есть сопротивление, потрать 2 пси реакцией: игнорируешь этот урон и получаешь иммунитет к этому типу до конца следующего хода."
     }
   ],
   "disciplines": [
@@ -505,48 +525,49 @@
       ]
     },
     {
-      "id": "mastery-of-fire",
-      "name": "Мастерство огня",
-      "focus": "Сопротивление огню и +2 к броскам урона огнем.",
+      "id": "psychic-assault",
+      "name": "Psychic Assault",
+      "focus": "+2 к броскам урона псионическими талантами, которые наносят психический урон.",
       "effects": [
         {
-          "id": "combustion",
-          "name": "Сожжение",
+          "id": "psionic-blast-single",
+          "name": "Псионический разряд",
           "type": "action",
           "cost": "1-7 пси",
-          "duration": "Концентрация, до 1 минуты",
-          "summary": "Con save; 1d10 огнем за пси и цель может загореться."
+          "range": "60 фт.",
+          "summary": "Видимое существо получает 1d8 психического урона за каждое потраченное пси; без спасброска."
         },
         {
-          "id": "flame-breath",
-          "name": "Пламенный смерч",
+          "id": "ego-whip",
+          "name": "Ego Whip",
           "type": "action",
           "cost": "3 пси",
-          "duration": "Концентрация, до 1 минуты",
-          "summary": "Куб огня 20 фт.; существа внутри получают 5 урона огнем."
+          "range": "60 фт.",
+          "summary": "Int save; 3d8 психического урона, при провале на следующем ходу цель может только Dodge, Disengage или Hide."
         },
         {
-          "id": "detonation",
-          "name": "Взрыв",
+          "id": "id-insinuation",
+          "name": "Id Insinuation",
           "type": "action",
           "cost": "5 пси",
-          "summary": "Con save; 7d6 огнем в радиусе 20 фт.; при провале цель падает ничком."
+          "range": "60 фт.",
+          "summary": "Int save; 5d8 психического урона, при провале на следующем ходу цель может только Dodge или Attack."
         },
         {
-          "id": "fire-form",
-          "name": "Огненная форма",
-          "type": "bonus",
-          "cost": "5 пси",
-          "duration": "Концентрация, до 1 минуты",
-          "summary": "Существа в 5 фт. получают 3d6 огнем в конце хода."
+          "id": "psychic-blast-cone",
+          "name": "Psychic Blast",
+          "type": "action",
+          "cost": "6-7 пси",
+          "range": "Self (60-футовый конус)",
+          "summary": "Int save; 8d8 психического урона в конусе 60 фт., или 10d8 за 7 пси."
         },
         {
-          "id": "animate-fire",
-          "name": "Оживший огонь",
+          "id": "psychic-crush",
+          "name": "Psychic Crush",
           "type": "action",
           "cost": "7 пси",
-          "duration": "Концентрация, до 1 часа",
-          "summary": "Призывает элементаля огня."
+          "range": "120 фт.",
+          "summary": "Int save в кубе 20 фт.; 8d8 психического урона и stun до конца твоего следующего хода при провале."
         }
       ]
     },
@@ -629,7 +650,7 @@
     }
   ],
   "stateDefaults": {
-    "hpCurrent": 120,
+    "hpCurrent": 129,
     "tempHp": 0,
     "maxHpAdjustment": 0,
     "psiPointsCurrent": 64,
@@ -640,7 +661,7 @@
       "4": 0,
       "5": 0
     },
-    "hitDiceCurrent": 13,
+    "hitDiceCurrent": 14,
     "luckyPointsCurrent": 3,
     "psionicMasteryUsesCurrent": 2,
     "conditions": [],
