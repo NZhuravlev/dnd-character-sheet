@@ -1,4 +1,4 @@
-const CHARACTER_URL = "./data/character.json";
+const CHARACTER_URL = "./data/character.json?v=20260704-discipline-modal";
 const STORAGE_KEY = "student-prizmari-combat-state-v1";
 const ARCANE_DABBLER_SLOT_COSTS = {
   1: 2,
