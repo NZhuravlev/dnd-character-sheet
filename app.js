@@ -637,7 +637,17 @@ function renderDisciplines(derived) {
     <article class="stack-card">
       <strong>${discipline.name}</strong>
       <p><strong>Психофокус:</strong> ${discipline.focus}</p>
-      <div class="detail-row"><span>${discipline.effects.map((effect) => effect.name).join(" · ")}</span></div>
+      <div class="effect-button-list" aria-label="Способности ${discipline.name}">
+        ${discipline.effects.map((effect) => `
+          <button
+            class="effect-link"
+            type="button"
+            data-discipline-id="${discipline.id}"
+            data-effect-id="${effect.id}"
+            aria-label="Открыть описание: ${effect.name}"
+          >${effect.name}</button>
+        `).join("")}
+      </div>
     </article>
   `).join("");
 }
@@ -904,6 +914,15 @@ function wireUi() {
       return;
     }
 
+    const disciplineEffectButton = event.target.closest("[data-discipline-id][data-effect-id]");
+    if (disciplineEffectButton) {
+      openDisciplineEffectModal(
+        disciplineEffectButton.dataset.disciplineId,
+        disciplineEffectButton.dataset.effectId
+      );
+      return;
+    }
+
     const removeEffectButton = event.target.closest("[data-remove-effect]");
     if (removeEffectButton) {
       runtimeState.activeEffectIds = runtimeState.activeEffectIds.filter((id) => id !== removeEffectButton.dataset.removeEffect);
@@ -914,9 +933,20 @@ function wireUi() {
     if (event.target.dataset.closeModal === "true") {
       closeActionsModal();
     }
+
+    if (event.target.dataset.closeEffectModal === "true") {
+      closeDisciplineEffectModal();
+    }
   });
   document.querySelector("#close-modal-button").addEventListener("click", closeActionsModal);
+  document.querySelector("#close-effect-modal-button").addEventListener("click", closeDisciplineEffectModal);
   document.querySelector("#modal-search-input").addEventListener("input", renderModalSearchResults);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    closeActionsModal();
+    closeDisciplineEffectModal();
+  });
 
   document.querySelector("#damage-button").addEventListener("click", () => applyHpAdjustment(-1));
   document.querySelector("#heal-button").addEventListener("click", () => applyHpAdjustment(1));
@@ -1277,6 +1307,37 @@ function closeActionsModal() {
   activeModalContext = null;
   modalFeedbackText = "";
   renderModalFeedback();
+  modal.classList.add("hidden");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function openDisciplineEffectModal(disciplineId, effectId) {
+  const discipline = characterData.disciplines.find((entry) => entry.id === disciplineId);
+  const effect = discipline?.effects.find((entry) => entry.id === effectId);
+  if (!discipline || !effect) return;
+
+  const modal = document.querySelector("#discipline-effect-modal");
+  document.querySelector("#effect-modal-type-label").textContent = discipline.name;
+  document.querySelector("#effect-modal-title").textContent = effect.name;
+  document.querySelector("#effect-modal-body").innerHTML = `
+    <p class="modal-detail-summary">${effect.summary}</p>
+    <div class="modal-detail-grid">
+      <div><span>Тип</span><strong>${humanActionType(effect.type) ?? "—"}</strong></div>
+      <div><span>Стоимость</span><strong>${effect.cost ?? "без стоимости"}</strong></div>
+      <div><span>Дистанция</span><strong>${effect.range ?? "—"}</strong></div>
+      <div><span>Длительность</span><strong>${effect.duration ?? "—"}</strong></div>
+    </div>
+    <div class="note-box">
+      <strong>Психофокус:</strong> ${discipline.focus}
+    </div>
+  `;
+  modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
+  document.querySelector("#close-effect-modal-button").focus();
+}
+
+function closeDisciplineEffectModal() {
+  const modal = document.querySelector("#discipline-effect-modal");
   modal.classList.add("hidden");
   modal.setAttribute("aria-hidden", "true");
 }

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Скив</title>
-    <link rel="stylesheet" href="./styles.css?v=20260608-equipment-title-layout" />
+    <link rel="stylesheet" href="./styles.css?v=20260704-discipline-modal" />
   </head>
   <body>
     <div class="page-shell">
@@ -167,6 +167,20 @@
         </div>
         <div id="modal-feedback" class="modal-feedback hidden"></div>
         <div id="modal-actions-list" class="modal-actions-list"></div>
+      </section>
+    </div>
+
+    <div id="discipline-effect-modal" class="details-modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-effect-modal="true"></div>
+      <section class="modal-shell detail-modal-shell" role="dialog" aria-modal="true" aria-labelledby="effect-modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" id="effect-modal-type-label"></p>
+            <h2 id="effect-modal-title">Способность</h2>
+          </div>
+          <button id="close-effect-modal-button" class="icon-button" type="button" aria-label="Закрыть">✕</button>
+        </div>
+        <div id="effect-modal-body" class="effect-modal-body"></div>
       </section>
     </div>
 
