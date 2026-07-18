@@ -525,7 +525,7 @@ function renderHero(derived) {
     .map((tag) => `
       <span
         class="tag ${tag.accent ?? ""} ${tag.icon ? "with-icon" : ""}"
-        ${tag.tooltip ? `tabindex="0" title="${escapeAttribute(tag.tooltip)}" data-tooltip="${escapeAttribute(tag.tooltip)}"` : ""}
+        ${tag.tooltip ? `tabindex="0" aria-label="${escapeAttribute(`${tag.label} ${tag.value}. ${tag.tooltip}`)}" data-tooltip="${escapeAttribute(tag.tooltip)}"` : ""}
       >
         ${tag.icon ? `<span class="tag-icon" aria-hidden="true">${chipIcon(tag.icon)}</span>` : ""}
         <span>${tag.label} ${tag.value}</span>
