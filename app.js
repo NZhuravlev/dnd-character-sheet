@@ -1,4 +1,4 @@
-const CHARACTER_URL = "./data/character.json?v=20260704-discipline-modal";
+const CHARACTER_URL = "./data/character.json?v=20260718-stat-tooltips";
 const STORAGE_KEY = "student-prizmari-combat-state-v1";
 const ARCANE_DABBLER_SLOT_COSTS = {
   1: 2,
@@ -507,27 +507,145 @@ function renderHero(derived) {
   document.querySelector("#hero-subtitle").textContent =
     `${derived.data.identity.className} ${derived.data.identity.level} · ${derived.data.identity.subclassName}`;
 
+  const breakdowns = buildHeroStatBreakdowns(derived);
   const tags = [
-    { label: "XP", value: derived.data.identity.xp.toLocaleString("ru-RU"), accent: "strong" },
-    { label: "PB", value: formatModifier(derived.proficiencyBonus), accent: "strong" },
-    { label: "КС", value: `${derived.spell.saveDC}`, icon: "sigil" },
-    { label: "Пси-атака", value: formatModifier(derived.spell.attackBonus), icon: "spark" },
-    { label: "КД", value: `${derived.armorClass}`, icon: "shield" },
-    { label: "Инициатива", value: formatModifier(derived.initiative), icon: "arrow" },
-    { label: "Скорость", value: `${derived.speed.walk} фт.`, icon: "stride" },
-    { label: "Пси-лимит", value: `${derived.progression.psiLimit}`, icon: "psi" },
-    { label: "Пассивное восприятие", value: `${derived.passivePerception}`, icon: "eye" },
-    { label: "Телепатия", value: "120 фт.", icon: "wave" }
+    { label: "XP", value: derived.data.identity.xp.toLocaleString("ru-RU"), accent: "strong", tooltip: breakdowns.xp },
+    { label: "PB", value: formatModifier(derived.proficiencyBonus), accent: "strong", tooltip: breakdowns.proficiency },
+    { label: "КС", value: `${derived.spell.saveDC}`, icon: "sigil", tooltip: breakdowns.saveDC },
+    { label: "Пси-атака", value: formatModifier(derived.spell.attackBonus), icon: "spark", tooltip: breakdowns.attack },
+    { label: "КД", value: `${derived.armorClass}`, icon: "shield", tooltip: breakdowns.armorClass },
+    { label: "Инициатива", value: formatModifier(derived.initiative), icon: "arrow", tooltip: breakdowns.initiative },
+    { label: "Скорость", value: `${derived.speed.walk} фт.`, icon: "stride", tooltip: breakdowns.speed },
+    { label: "Пси-лимит", value: `${derived.progression.psiLimit}`, icon: "psi", tooltip: breakdowns.psiLimit },
+    { label: "Пассивное восприятие", value: `${derived.passivePerception}`, icon: "eye", tooltip: breakdowns.passivePerception },
+    { label: "Телепатия", value: "120 фт.", icon: "wave", tooltip: breakdowns.telepathy }
   ];
 
   document.querySelector("#hero-tags").innerHTML = tags
     .map((tag) => `
-      <span class="tag ${tag.accent ?? ""} ${tag.icon ? "with-icon" : ""}">
+      <span
+        class="tag ${tag.accent ?? ""} ${tag.icon ? "with-icon" : ""}"
+        ${tag.tooltip ? `tabindex="0" title="${escapeAttribute(tag.tooltip)}" data-tooltip="${escapeAttribute(tag.tooltip)}"` : ""}
+      >
         ${tag.icon ? `<span class="tag-icon" aria-hidden="true">${chipIcon(tag.icon)}</span>` : ""}
         <span>${tag.label} ${tag.value}</span>
       </span>
     `)
     .join("");
+}
+
+function buildHeroStatBreakdowns(derived) {
+  const psionicAbility = derived.abilities[derived.data.combat.psionicAbility];
+  const perceptionDefinition = SKILL_DEFINITIONS.per;
+  const perceptionAbility = derived.abilities[perceptionDefinition.ability];
+  const perceptionProficiency = derived.data.proficiencies.skills.includes("per") ? derived.proficiencyBonus : 0;
+  const perceptionExpertise = derived.data.proficiencies.expertise.includes("per") ? derived.proficiencyBonus : 0;
+  const perceptionParts = [
+    `${perceptionAbility.label} ${formatModifier(perceptionAbility.mod)}`,
+    perceptionProficiency ? `бонус мастерства ${formatModifier(perceptionProficiency)}` : null,
+    perceptionExpertise ? `экспертиза ${formatModifier(perceptionExpertise)}` : null
+  ].filter(Boolean);
+
+  return {
+    xp: `Текущий опыт: ${derived.data.identity.xp.toLocaleString("ru-RU")}.`,
+    proficiency: `Уровень ${derived.data.identity.level}: бонус мастерства ${formatModifier(derived.proficiencyBonus)}.`,
+    saveDC: [
+      `Основа 8`,
+      `${psionicAbility.label} ${formatModifier(psionicAbility.mod)}`,
+      `бонус мастерства ${formatModifier(derived.proficiencyBonus)}`,
+      `= ${derived.spell.saveDC}`
+    ].join("\n"),
+    attack: [
+      `${psionicAbility.label} ${formatModifier(psionicAbility.mod)}`,
+      `бонус мастерства ${formatModifier(derived.proficiencyBonus)}`,
+      `= ${formatModifier(derived.spell.attackBonus)}`
+    ].join("\n"),
+    armorClass: buildArmorClassBreakdown(derived),
+    initiative: buildInitiativeBreakdown(derived),
+    speed: buildSpeedBreakdown(derived),
+    psiLimit: `Таблица Mystic ${derived.data.identity.level} уровня: максимум ${derived.progression.psiLimit} пси на одну дисциплину.`,
+    passivePerception: [
+      `Основа 10`,
+      `Восприятие ${formatModifier(derived.skills.per)} (${perceptionParts.join(" + ")})`,
+      `= ${derived.passivePerception}`
+    ].join("\n"),
+    telepathy: "Телепатия Mystic: общение с видимым существом в пределах 120 фт."
+  };
+}
+
+function buildArmorClassBreakdown(derived) {
+  const armor = derived.data.combat.armor;
+  const dex = derived.abilities.dex;
+  const baseArmorClass = armor?.equipped ? armor.baseArmorClass : 10;
+  const source = armor?.equipped ? armor.name : "без доспеха";
+  const baseTotal = baseArmorClass + dex.mod;
+  const parts = [
+    `${source}: ${baseArmorClass}`,
+    `Ловкость ${formatModifier(dex.mod)}`
+  ];
+
+  if (derived.armorClass !== baseTotal) {
+    parts.push(`эффекты ${formatModifier(derived.armorClass - baseTotal)}`);
+  }
+
+  return `${parts.join("\n")}\n= ${derived.armorClass}`;
+}
+
+function buildInitiativeBreakdown(derived) {
+  const dex = derived.abilities.dex;
+  const parts = [`Ловкость ${formatModifier(dex.mod)}`];
+  let subtotal = dex.mod;
+
+  for (const feat of derived.data.feats) {
+    for (const modifier of feat.modifiers ?? []) {
+      const amount = parseAdditiveModifier(modifier.target, modifier.formula, "initiative");
+      if (amount === null) continue;
+      subtotal += amount;
+      parts.push(`${feat.name} ${formatModifier(amount)}`);
+    }
+  }
+
+  const activeEffects = derived.data.effectPresets.filter((effect) => derived.state.activeEffectIds.includes(effect.id));
+  for (const effect of activeEffects) {
+    for (const modifier of effect.modifiers ?? []) {
+      const amount = parseAdditiveModifier(modifier.target, modifier.formula, "initiative");
+      if (amount === null) continue;
+      subtotal += amount;
+      parts.push(`${effect.name} ${formatModifier(amount)}`);
+    }
+  }
+
+  if (subtotal !== derived.initiative) {
+    parts.push(`прочие эффекты ${formatModifier(derived.initiative - subtotal)}`);
+  }
+
+  return `${parts.join("\n")}\n= ${formatModifier(derived.initiative)}`;
+}
+
+function buildSpeedBreakdown(derived) {
+  const baseSpeed = derived.data.movement.walk;
+  if (derived.speed.walk === baseSpeed) {
+    return `Базовая скорость: ${baseSpeed} фт.`;
+  }
+
+  return [
+    `Базовая скорость: ${baseSpeed} фт.`,
+    `активные эффекты: ${derived.speed.walk} фт.`
+  ].join("\n");
+}
+
+function parseAdditiveModifier(target, formula, expectedTarget) {
+  if (target !== expectedTarget) return null;
+  const match = String(formula ?? "").trim().match(/^value\s*\+\s*(-?\d+)$/);
+  return match ? Number(match[1]) : null;
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function chipIcon(type) {

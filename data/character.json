@@ -9,8 +9,8 @@
     "name": "Скив",
     "className": "Mystic",
     "subclassName": "Орден Ву Дзень",
-    "level": 14,
-    "xp": 140000,
+    "level": 15,
+    "xp": 165000,
     "background": "свое проис.",
     "species": null
   },
@@ -18,7 +18,7 @@
     "str": 13,
     "dex": 14,
     "con": 12,
-    "int": 25,
+    "int": 27,
     "wis": 14,
     "cha": 12
   },
@@ -91,7 +91,7 @@
   },
   "currency": {
     "pp": 13691,
-    "gp": 41985
+    "gp": 327218
   },
   "equipment": [
     "Набор ученого",
@@ -199,6 +199,17 @@
       "equipped": false
     },
     {
+      "id": "universal-solvent",
+      "name": "Универсальный растворитель",
+      "category": "wondrous",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 2,
+      "notes": [
+        "Растворяет Sovereign Glue и другие сильные клеи; один флакон покрывает до 1 кв. фута поверхности."
+      ]
+    },
+    {
       "id": "potion-of-superior-healing",
       "name": "Зелье превосходного лечения",
       "category": "potion",
@@ -207,16 +218,61 @@
       "quantity": 1
     },
     {
+      "id": "potion-of-rejuvenation",
+      "name": "Зелье омоложения",
+      "category": "potion",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 1,
+      "notes": [
+        "После питья физический возраст уменьшается на 1d6 + 6 лет, минимум до 13 лет.",
+        "Повторное употребление подобных зелий может иметь обратный эффект по решению мастера."
+      ]
+    },
+    {
+      "id": "potion-of-storm-giant-strength",
+      "name": "Зелье силы штормового великана",
+      "category": "potion",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 1,
+      "notes": [
+        "На 1 час Сила становится 29, если она ниже 29."
+      ]
+    },
+    {
+      "id": "potion-of-invisibility",
+      "name": "Зелье невидимости",
+      "category": "potion",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 1,
+      "notes": [
+        "После питья становишься невидимым на 1 час; эффект заканчивается, если атаковать или сотворить заклинание."
+      ]
+    },
+    {
+      "id": "potion-of-speed",
+      "name": "Зелье скорости",
+      "category": "potion",
+      "requiresAttunement": false,
+      "equipped": false,
+      "quantity": 1,
+      "notes": [
+        "После питья на 1 минуту получаешь эффект Haste без концентрации."
+      ]
+    },
+    {
       "id": "tome-of-clear-thought-read",
       "name": "Tome of Clear Thought",
       "category": "wondrous",
       "requiresAttunement": false,
       "equipped": false,
       "consumed": true,
-      "quantity": 2,
+      "quantity": 3,
       "notes": [
-        "Куплено и прочитано 2 тома; Интеллект увеличен на +4, максимум Интеллекта также увеличен на +4.",
-        "Цена учтена как 50 000 зм за том, всего 100 000 зм."
+        "Куплено и прочитано 3 тома; Интеллект увеличен на +6, максимум Интеллекта также увеличен на +6.",
+        "Цена учтена за первые 2 тома как 50 000 зм за том, всего 100 000 зм."
       ]
     }
   ],
@@ -341,7 +397,7 @@
       "id": "psionic-mastery",
       "name": "Psionic Mastery",
       "kind": "action",
-      "summary": "Действием получаешь 9 особых пси-очков; доступно 2 раза за долгий отдых."
+      "summary": "Действием получаешь 9 особых пси-очков; доступно 3 раза за долгий отдых."
     },
     {
       "id": "elemental-attunement",
@@ -365,31 +421,49 @@
   ],
   "disciplines": [
     {
-      "id": "psionic-weapon",
-      "name": "Псионическое оружие",
-      "focus": "Выбранное оружие или безоружный удар наносят психический магический урон вместо обычного.",
+      "id": "telepathic-contact",
+      "name": "Telepathic Contact",
+      "focus": "Телепатия работает сразу с шестью существами одновременно.",
       "effects": [
         {
-          "id": "ethereal-weapon",
-          "name": "Эфирное оружие",
-          "type": "bonus",
-          "cost": "1 пси",
-          "summary": "Следующая атака до конца хода не кидает атаку; цель делает Dex save."
+          "id": "exacting-query",
+          "name": "Exacting Query",
+          "type": "action",
+          "cost": "2 пси",
+          "summary": "Цель, с которой есть телепатия, делает Int save; при провале правдиво отвечает на один вопрос телепатически."
         },
         {
-          "id": "lethal-strike",
-          "name": "Смертельный удар",
-          "type": "bonus",
-          "cost": "1-7 пси",
-          "summary": "Следующее успешное попадание до конца хода наносит +1d10 психического урона за каждое потраченное пси."
+          "id": "occluded-mind",
+          "name": "Occluded Mind",
+          "type": "action",
+          "cost": "2 пси",
+          "duration": "5 минут",
+          "summary": "Цель, с которой есть телепатия, делает Int save; при провале верит одному телепатическому утверждению до 10 слов."
         },
         {
-          "id": "augmented-weapon",
-          "name": "Усиленное оружие",
-          "type": "bonus",
+          "id": "broken-will",
+          "name": "Broken Will",
+          "type": "action",
           "cost": "5 пси",
-          "duration": "Концентрация, до 10 минут",
-          "summary": "Простое или воинское оружие становится магическим и получает +3 к атакам и урону."
+          "summary": "Цель, с которой есть телепатия, делает Int save; при провале ты выбираешь её движение и действие на следующем ходу."
+        },
+        {
+          "id": "psychic-grip",
+          "name": "Psychic Grip",
+          "type": "action",
+          "cost": "6 пси",
+          "range": "60 фт.",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Int save; при провале цель парализована, повторяет сейв в конце хода, а при провале ты реакцией двигаешь её на полскорости."
+        },
+        {
+          "id": "psychic-domination",
+          "name": "Psychic Domination",
+          "type": "action",
+          "cost": "7 пси",
+          "range": "60 фт.",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Int save; при провале ты выбираешь действия и движение цели на её ходах, цель повторяет сейв в конце хода."
         }
       ]
     },
@@ -599,6 +673,55 @@
           "summary": "Выбранные существа получают сопротивление психическому урону и преимущество на Int/Wis/Cha сейвы."
         }
       ]
+    },
+    {
+      "id": "mantle-of-command",
+      "name": "Mantle of Command",
+      "focus": "Если заканчиваешь ход без движения, реакцией позволяешь видимому союзнику в 30 фт. пройти до половины скорости по выбранному тобой маршруту.",
+      "effects": [
+        {
+          "id": "coordinated-movement",
+          "name": "Coordinated Movement",
+          "type": "bonus",
+          "cost": "2 пси",
+          "range": "60 фт.",
+          "summary": "До пяти видимых союзников могут реакцией пройти до половины скорости по выбранному тобой маршруту."
+        },
+        {
+          "id": "commanders-sight",
+          "name": "Commander's Sight",
+          "type": "action",
+          "cost": "2 пси",
+          "range": "60 фт.",
+          "duration": "Концентрация, 1 раунд",
+          "summary": "Выбери видимое существо; до начала твоего следующего хода союзники атакуют эту цель с преимуществом."
+        },
+        {
+          "id": "command-to-strike",
+          "name": "Command to Strike",
+          "type": "action",
+          "cost": "3 пси",
+          "range": "60 фт.",
+          "summary": "Один видимый союзник реакцией немедленно совершает действие Attack; цели атак выбираешь ты."
+        },
+        {
+          "id": "strategic-mind",
+          "name": "Strategic Mind",
+          "type": "action",
+          "cost": "5 пси",
+          "range": "60 фт.",
+          "duration": "Концентрация, до 1 минуты",
+          "summary": "Союзники в 60 фт. на своём ходу бонусным действием могут Dash, Disengage или добавить 1d4 к каждому броску атаки на этом ходу."
+        },
+        {
+          "id": "overwhelming-attack",
+          "name": "Overwhelming Attack",
+          "type": "action",
+          "cost": "7 пси",
+          "range": "60 фт.",
+          "summary": "До пяти видимых союзников могут реакцией совершить действие Attack; цели атак выбираешь ты."
+        }
+      ]
     }
   ],
   "talents": [
@@ -650,7 +773,7 @@
     }
   ],
   "stateDefaults": {
-    "hpCurrent": 129,
+    "hpCurrent": 138,
     "tempHp": 0,
     "maxHpAdjustment": 0,
     "psiPointsCurrent": 64,
@@ -661,9 +784,9 @@
       "4": 0,
       "5": 0
     },
-    "hitDiceCurrent": 14,
+    "hitDiceCurrent": 15,
     "luckyPointsCurrent": 3,
-    "psionicMasteryUsesCurrent": 2,
+    "psionicMasteryUsesCurrent": 3,
     "conditions": [],
     "concentration": {
       "active": false,
@@ -723,28 +846,6 @@
       "notes": [
         "Бонус применяется только на бросок инициативы в начале боя."
       ]
-    },
-    {
-      "id": "augmented-spear",
-      "name": "Усиленное оружие: копье",
-      "source": "Псионическое оружие",
-      "duration": "Концентрация, до 10 минут",
-      "weaponId": "spear",
-      "weaponModifiers": {
-        "attackBonus": "value + 3",
-        "damageBonus": "value + 3"
-      }
-    },
-    {
-      "id": "augmented-crossbow",
-      "name": "Усиленное оружие: ручной арбалет",
-      "source": "Псионическое оружие",
-      "duration": "Концентрация, до 10 минут",
-      "weaponId": "hand-crossbow",
-      "weaponModifiers": {
-        "attackBonus": "value + 3",
-        "damageBonus": "value + 3"
-      }
     },
     {
       "id": "precognitive-sense",
